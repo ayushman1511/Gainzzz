@@ -2243,6 +2243,40 @@ class StickFigurePainter extends CustomPainter {
     canvas.drawLine(Offset(center.dx, center.dy - 6), Offset(center.dx, center.dy + 6), cp);
   }
 
+  double getRealisticPhase(double progress, String type) {
+    final String key = type.toLowerCase();
+    if (key.contains('pushup') || key.contains('chest') || key.contains('squat') || key.contains('leg') || key.contains('lunge') || key.contains('pull') || key.contains('back') || key.contains('row')) {
+      // Eased human concentric/eccentric physics curve: Slow controlled descent, bottom hold, explosive Concentric rise
+      if (progress < 0.45) {
+        // Slow eccentric lowering
+        double t = progress / 0.45;
+        return 1.0 - (t * t * (3 - 2 * t)); // Smooth quadratic ease
+      } else if (progress < 0.55) {
+        // Tension bottom pause
+        return 0.0;
+      } else if (progress < 0.90) {
+        // Explosive concentric press/stand
+        double t = (progress - 0.55) / 0.35;
+        return 1.0 - math.pow(1.0 - t, 4); // Explosive easeOutQuart
+      } else {
+        // Top lock-out isometric hold
+        return 1.0;
+      }
+    } else if (key.contains('water') || key.contains('drink') || key.contains('hydration')) {
+      if (progress < 0.25) {
+        double t = progress / 0.25;
+        return t * t;
+      } else if (progress < 0.75) {
+        double swallow = 0.02 * math.sin(progress * 2 * math.pi * 10);
+        return 1.0 + swallow;
+      } else {
+        double t = (progress - 0.75) / 0.25;
+        return 1.0 - t * t;
+      }
+    }
+    return (math.sin(progress * 2 * math.pi) + 1.0) / 2.0; // Fallback
+  }
+
   void drawFigureAtProgress(
     Canvas canvas,
     Size size,
@@ -2255,35 +2289,53 @@ class StickFigurePainter extends CustomPainter {
     final double w = size.width;
     final double h = size.height;
     
-    final Paint neonPaint = Paint()
-      ..color = mainColor.withOpacity(opacity)
+    // Choose neon accent colors
+    final Color farColor = limbColor.withOpacity(opacity * 0.32);
+    final Color nearColor = limbColor.withOpacity(opacity);
+    final Color bodyColor = mainColor.withOpacity(opacity);
+    
+    final Paint farPaint = Paint()
+      ..color = farColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
+      ..strokeWidth = 3.0
       ..strokeCap = StrokeCap.round;
       
-    final Paint limbPaint = Paint()
-      ..color = limbColor.withOpacity(opacity)
+    final Paint nearPaint = Paint()
+      ..color = nearColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.5
       ..strokeCap = StrokeCap.round;
+
+    final Paint farGlow = Paint()
+      ..color = farColor.withOpacity(0.25 * opacity)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6.0
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+
+    final Paint nearGlow = Paint()
+      ..color = nearColor.withOpacity(0.4 * opacity)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 7.0
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+
+    final Paint spinePaint = Paint()
+      ..color = bodyColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.0
+      ..strokeCap = StrokeCap.round;
+
+    final Paint spineGlow = Paint()
+      ..color = bodyColor.withOpacity(0.4 * opacity)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 8.0
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
       
     final Paint fillPaint = Paint()
       ..color = (isDark ? Colors.black : Colors.white).withOpacity(opacity)
       ..style = PaintingStyle.fill;
-
-    final Paint glowPaint = Paint()
-      ..color = mainColor.withOpacity(0.4 * opacity)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 7.0
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
-
-    final Paint limbGlowPaint = Paint()
-      ..color = limbColor.withOpacity(0.4 * opacity)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 7.0
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
 
     final Paint floorPaint = Paint()
       ..color = (isDark ? Colors.white12 : Colors.black12).withOpacity(opacity)
@@ -2297,8 +2349,10 @@ class StickFigurePainter extends CustomPainter {
       canvas.drawLine(Offset(20, h - 15), Offset(w - 20, h - 15), floorPaint);
     }
 
+    // Dynamic realistic phase curve
+    double phase = getRealisticPhase(localProgress, type);
+
     if (key.contains('pushup') || key.contains('chest')) {
-      double phase = (math.sin(localProgress * 2 * math.pi) + 1.0) / 2.0;
       double feetX = 40.0;
       double feetY = h - 20.0;
       double hipX = 80.0;
@@ -2307,121 +2361,250 @@ class StickFigurePainter extends CustomPainter {
       double shoulderY = h - 30.0 - 25.0 * phase;
       double headX = 145.0;
       double headY = shoulderY - 8.0;
+      
+      // Hands placed on floor
       double handX = 125.0;
       double handY = h - 20.0;
-      double elbowX = 110.0 + 15.0 * phase;
-      double elbowY = h - 25.0 - 13.0 * phase;
+      
+      // Breathing chest expansion factor
+      double breath = 2.0 * math.sin(localProgress * 2 * math.pi);
 
+      // --- FAR ARM (Layer 1, Behind) ---
+      double farElbowX = 107.0 + 15.0 * phase;
+      double farElbowY = h - 28.0 - 13.0 * phase;
+      double farHandX = handX - 5.0;
+      double farHandY = handY - 2.0;
       if (isGlowPass) {
-        canvas.drawLine(Offset(feetX, feetY), Offset(hipX, hipY), glowPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), glowPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, glowPaint);
-        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(elbowX, elbowY), limbGlowPaint);
-        canvas.drawLine(Offset(elbowX, elbowY), Offset(handX, handY), limbGlowPaint);
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(farElbowX, farElbowY), farGlow);
+        canvas.drawLine(Offset(farElbowX, farElbowY), Offset(farHandX, farHandY), farGlow);
       } else {
-        canvas.drawLine(Offset(feetX, feetY), Offset(hipX, hipY), neonPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), neonPaint);
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(farElbowX, farElbowY), farPaint);
+        canvas.drawLine(Offset(farElbowX, farElbowY), Offset(farHandX, farHandY), farPaint);
+      }
+
+      // --- BODY SPINE (Layer 2, Middle) ---
+      if (isGlowPass) {
+        canvas.drawLine(Offset(feetX, feetY), Offset(hipX, hipY), spineGlow);
+        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), spineGlow);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spineGlow);
+      } else {
+        canvas.drawLine(Offset(feetX, feetY), Offset(hipX, hipY), spinePaint);
+        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), spinePaint);
         canvas.drawCircle(Offset(headX, headY), 8.0, fillPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, neonPaint);
-        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(elbowX, elbowY), limbPaint);
-        canvas.drawLine(Offset(elbowX, elbowY), Offset(handX, handY), limbPaint);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spinePaint);
+        
+        // Chest expansion lines (Breathing ribs)
+        canvas.drawCircle(Offset(shoulderX - 15.0, shoulderY + 8.0), 6.0 + breath, Paint()
+          ..color = bodyColor.withOpacity(0.15)
+          ..style = PaintingStyle.fill);
+        
+        // High-tech gaze vector line
+        double gazeEndX = headX + 25.0;
+        double gazeEndY = headY + 12.0;
+        canvas.drawLine(Offset(headX + 4.0, headY + 2.0), Offset(gazeEndX, gazeEndY), Paint()
+          ..color = mainColor.withOpacity(0.3 * opacity)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0);
+        canvas.drawCircle(Offset(gazeEndX, gazeEndY), 1.5, Paint()..color = mainColor.withOpacity(0.5 * opacity)..style = PaintingStyle.fill);
+      }
+
+      // --- NEAR ARM (Layer 3, Front) ---
+      double nearElbowX = 110.0 + 15.0 * phase;
+      double nearElbowY = h - 24.0 - 13.0 * phase;
+      if (isGlowPass) {
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(nearElbowX, nearElbowY), nearGlow);
+        canvas.drawLine(Offset(nearElbowX, nearElbowY), Offset(handX, handY), nearGlow);
+      } else {
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(nearElbowX, nearElbowY), nearPaint);
+        canvas.drawLine(Offset(nearElbowX, nearElbowY), Offset(handX, handY), nearPaint);
         
         _drawCrosshair(canvas, Offset(shoulderX, shoulderY), mainColor.withOpacity(opacity));
         _drawCrosshair(canvas, Offset(hipX, hipY), limbColor.withOpacity(opacity));
       }
+
+      // --- POWER COMPRESSION SHOCKWAVE ---
+      if (!isGlowPass && localProgress > 0.40 && localProgress < 0.60) {
+        double rip = ((localProgress - 0.40) / 0.20); // 0.0 to 1.0
+        canvas.drawCircle(Offset(handX, handY), rip * 20.0, Paint()
+          ..color = mainColor.withOpacity(0.4 * (1.0 - rip) * opacity)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0);
+      }
+
     } else if (key.contains('squat') || key.contains('leg') || key.contains('lunge')) {
-      double phase = (math.sin(localProgress * 2 * math.pi) + 1.0) / 2.0;
-      double feetX1 = w / 2 - 10.0;
+      double feetX1 = w / 2 - 12.0;
       double feetY1 = h - 20.0;
-      double feetX2 = w / 2 + 10.0;
+      double feetX2 = w / 2 + 12.0;
       double feetY2 = h - 20.0;
+      
       double hipX = w / 2 - 8.0 + 8.0 * phase;
       double hipY = h - 30.0 - 20.0 * phase;
-      double kneeX1 = w / 2 + 5.0 - 5.0 * phase;
-      double kneeY1 = h - 30.0 - 5.0 * phase;
-      double kneeX2 = w / 2 - 15.0 + 15.0 * phase;
-      double kneeY2 = h - 30.0 - 5.0 * phase;
+      
+      double kneeX1 = w / 2 + 6.0 - 6.0 * phase;
+      double kneeY1 = h - 30.0 - 4.0 * phase;
+      double kneeX2 = w / 2 - 16.0 + 16.0 * phase;
+      double kneeY2 = h - 30.0 - 4.0 * phase;
+      
       double shoulderX = w / 2 - 6.0 + 6.0 * phase;
       double shoulderY = hipY - 18.0 - 7.0 * phase;
       double headX = shoulderX + 2.0 - 2.0 * phase;
       double headY = shoulderY - 10.0;
+      
       double handX = w / 2 + 20.0;
       double handY = shoulderY;
 
+      // --- FAR LEG (Layer 1, Behind) ---
       if (isGlowPass) {
-        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), glowPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, glowPaint);
-        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(handX, handY), limbGlowPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX1, kneeY1), glowPaint);
-        canvas.drawLine(Offset(kneeX1, kneeY1), Offset(feetX1, feetY1), glowPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX2, kneeY2), glowPaint);
-        canvas.drawLine(Offset(kneeX2, kneeY2), Offset(feetX2, feetY2), glowPaint);
+        canvas.drawLine(Offset(hipX - 2.0, hipY - 2.0), Offset(kneeX2, kneeY2), farGlow);
+        canvas.drawLine(Offset(kneeX2, kneeY2), Offset(feetX2, feetY2), farGlow);
       } else {
-        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), neonPaint);
+        canvas.drawLine(Offset(hipX - 2.0, hipY - 2.0), Offset(kneeX2, kneeY2), farPaint);
+        canvas.drawLine(Offset(kneeX2, kneeY2), Offset(feetX2, feetY2), farPaint);
+      }
+
+      // --- SPINE CORE (Layer 2, Middle) ---
+      if (isGlowPass) {
+        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), spineGlow);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spineGlow);
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(handX, handY), nearGlow);
+      } else {
+        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), spinePaint);
         canvas.drawCircle(Offset(headX, headY), 8.0, fillPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, neonPaint);
-        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(handX, handY), limbPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX1, kneeY1), neonPaint);
-        canvas.drawLine(Offset(kneeX1, kneeY1), Offset(feetX1, feetY1), neonPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX2, kneeY2), neonPaint);
-        canvas.drawLine(Offset(kneeX2, kneeY2), Offset(feetX2, feetY2), neonPaint);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spinePaint);
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(handX, handY), nearPaint);
+        
+        // Gaze Vector
+        double gazeEndX = headX + 22.0;
+        double gazeEndY = headY;
+        canvas.drawLine(Offset(headX + 5.0, headY), Offset(gazeEndX, gazeEndY), Paint()
+          ..color = mainColor.withOpacity(0.35 * opacity)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0);
+        canvas.drawCircle(Offset(gazeEndX, gazeEndY), 1.5, Paint()..color = mainColor.withOpacity(0.5 * opacity)..style = PaintingStyle.fill);
+      }
+
+      // --- NEAR LEG (Layer 3, Front) ---
+      if (isGlowPass) {
+        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX1, kneeY1), nearGlow);
+        canvas.drawLine(Offset(kneeX1, kneeY1), Offset(feetX1, feetY1), nearGlow);
+      } else {
+        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX1, kneeY1), nearPaint);
+        canvas.drawLine(Offset(kneeX1, kneeY1), Offset(feetX1, feetY1), nearPaint);
         
         _drawCrosshair(canvas, Offset(hipX, hipY), mainColor.withOpacity(opacity));
         _drawCrosshair(canvas, Offset(shoulderX, shoulderY), limbColor.withOpacity(opacity));
       }
+
+      // --- SOLID FLOOR COMPRESSION RIPPLES AT BOTTOM ---
+      if (!isGlowPass && localProgress > 0.42 && localProgress < 0.58) {
+        double rip = ((localProgress - 0.42) / 0.16);
+        canvas.drawLine(Offset(feetX1 - 10.0 - 15.0 * rip, feetY1), Offset(feetX2 + 10.0 + 15.0 * rip, feetY2), Paint()
+          ..color = mainColor.withOpacity(0.5 * (1.0 - rip) * opacity)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2);
+      }
+
     } else if (key.contains('run') || key.contains('walk') || key.contains('cardio')) {
       double bounce = math.sin(localProgress * 2 * math.pi * 2) * 3.0;
       double legAngle1 = localProgress * 2 * math.pi;
       double legAngle2 = legAngle1 + math.pi;
+      
       double hipX = w / 2;
       double hipY = h - 45.0 + bounce;
       double shoulderX = w / 2 + 3.0;
       double shoulderY = hipY - 20.0;
       double headX = shoulderX + 2.0;
       double headY = shoulderY - 10.0;
+      
+      // Leg 1 (Near)
       double kneeX1 = hipX + math.sin(legAngle1) * 12.0 + 2.0;
       double kneeY1 = hipY + math.cos(legAngle1) * 8.0 + 12.0;
       double footX1 = kneeX1 + math.sin(legAngle1 - 0.5) * 12.0 - 2.0;
       double footY1 = kneeY1 + math.cos(legAngle1 - 0.5) * 8.0 + 12.0;
+      
+      // Leg 2 (Far, Opposite phase)
       double kneeX2 = hipX + math.sin(legAngle2) * 12.0 + 2.0;
       double kneeY2 = hipY + math.cos(legAngle2) * 8.0 + 12.0;
       double footX2 = kneeX2 + math.sin(legAngle2 - 0.5) * 12.0 - 2.0;
       double footY2 = kneeY2 + math.cos(legAngle2 - 0.5) * 8.0 + 12.0;
+
+      // Arm 1 (Near, swings with Leg 2)
       double elbowX1 = shoulderX + math.sin(legAngle2) * 8.0 - 4.0;
       double elbowY1 = shoulderY + math.cos(legAngle2) * 6.0 + 10.0;
       double handX1 = elbowX1 + math.sin(legAngle2 + 0.8) * 8.0 + 4.0;
       double handY1 = elbowY1 + math.cos(legAngle2 + 0.8) * 4.0;
+      
+      // Arm 2 (Far, swings with Leg 1)
       double elbowX2 = shoulderX + math.sin(legAngle1) * 8.0 - 4.0;
       double elbowY2 = shoulderY + math.cos(legAngle1) * 6.0 + 10.0;
       double handX2 = elbowX2 + math.sin(legAngle1 + 0.8) * 8.0 + 4.0;
       double handY2 = elbowY2 + math.cos(legAngle1 + 0.8) * 4.0;
 
+      // --- FAR SIDE (Layer 1, Opposite Limbs) ---
       if (isGlowPass) {
-        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), glowPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, glowPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX1, kneeY1), glowPaint);
-        canvas.drawLine(Offset(kneeX1, kneeY1), Offset(footX1, footY1), glowPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX2, kneeY2), glowPaint);
-        canvas.drawLine(Offset(kneeX2, kneeY2), Offset(footX2, footY2), glowPaint);
-        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(elbowX1, elbowY1), limbGlowPaint);
-        canvas.drawLine(Offset(elbowX1, elbowY1), Offset(handX1, handY1), limbGlowPaint);
-        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(elbowX2, elbowY2), limbGlowPaint);
-        canvas.drawLine(Offset(elbowX2, elbowY2), Offset(handX2, handY2), limbGlowPaint);
+        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX2, kneeY2), farGlow);
+        canvas.drawLine(Offset(kneeX2, kneeY2), Offset(footX2, footY2), farGlow);
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(elbowX2, elbowY2), farGlow);
+        canvas.drawLine(Offset(elbowX2, elbowY2), Offset(handX2, handY2), farGlow);
       } else {
-        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), neonPaint);
+        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX2, kneeY2), farPaint);
+        canvas.drawLine(Offset(kneeX2, kneeY2), Offset(footX2, footY2), farPaint);
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(elbowX2, elbowY2), farPaint);
+        canvas.drawLine(Offset(elbowX2, elbowY2), Offset(handX2, handY2), farPaint);
+      }
+
+      // --- CORE BODY SPINE ---
+      if (isGlowPass) {
+        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), spineGlow);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spineGlow);
+      } else {
+        canvas.drawLine(Offset(hipX, hipY), Offset(shoulderX, shoulderY), spinePaint);
         canvas.drawCircle(Offset(headX, headY), 8.0, fillPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, neonPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX1, kneeY1), neonPaint);
-        canvas.drawLine(Offset(kneeX1, kneeY1), Offset(footX1, footY1), neonPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX2, kneeY2), neonPaint);
-        canvas.drawLine(Offset(kneeX2, kneeY2), Offset(footX2, footY2), neonPaint);
-        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(elbowX1, elbowY1), limbPaint);
-        canvas.drawLine(Offset(elbowX1, elbowY1), Offset(handX1, handY1), limbPaint);
-        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(elbowX2, elbowY2), limbPaint);
-        canvas.drawLine(Offset(elbowX2, elbowY2), Offset(handX2, handY2), limbPaint);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spinePaint);
+        
+        // Gaze Vector
+        double gazeEndX = headX + 22.0;
+        double gazeEndY = headY + 2.0;
+        canvas.drawLine(Offset(headX + 5.0, headY), Offset(gazeEndX, gazeEndY), Paint()
+          ..color = mainColor.withOpacity(0.35 * opacity)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0);
+        canvas.drawCircle(Offset(gazeEndX, gazeEndY), 1.5, Paint()..color = mainColor.withOpacity(0.5 * opacity)..style = PaintingStyle.fill);
+      }
+
+      // --- NEAR SIDE (Layer 3, Primary Limbs) ---
+      if (isGlowPass) {
+        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX1, kneeY1), nearGlow);
+        canvas.drawLine(Offset(kneeX1, kneeY1), Offset(footX1, footY1), nearGlow);
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(elbowX1, elbowY1), nearGlow);
+        canvas.drawLine(Offset(elbowX1, elbowY1), Offset(handX1, handY1), nearGlow);
+      } else {
+        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX1, kneeY1), nearPaint);
+        canvas.drawLine(Offset(kneeX1, kneeY1), Offset(footX1, footY1), nearPaint);
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(elbowX1, elbowY1), nearPaint);
+        canvas.drawLine(Offset(elbowX1, elbowY1), Offset(handX1, handY1), nearPaint);
         
         _drawCrosshair(canvas, Offset(shoulderX, shoulderY), mainColor.withOpacity(opacity));
       }
+
+      // --- POWER FOOTPRINT SHOCKWAVES ---
+      if (!isGlowPass) {
+        double footCycle1 = (localProgress * 2) % 1.0;
+        if (footY1 > h - 22.0) {
+          canvas.drawCircle(Offset(footX1, h - 15.0), footCycle1 * 18.0, Paint()
+            ..color = mainColor.withOpacity(0.4 * (1.0 - footCycle1) * opacity)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.0);
+        }
+        double footCycle2 = ((localProgress + 0.5) * 2) % 1.0;
+        if (footY2 > h - 22.0) {
+          canvas.drawCircle(Offset(footX2, h - 15.0), footCycle2 * 18.0, Paint()
+            ..color = limbColor.withOpacity(0.4 * (1.0 - footCycle2) * opacity)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.0);
+        }
+      }
+
     } else if (key.contains('pull') || key.contains('back') || key.contains('row')) {
       final Paint barPaint = Paint()
         ..color = (isDark ? Colors.white38 : Colors.black38).withOpacity(opacity)
@@ -2431,9 +2614,6 @@ class StickFigurePainter extends CustomPainter {
         canvas.drawLine(Offset(60, 20), Offset(w - 60, 20), barPaint);
       }
 
-      double phase = (math.sin(localProgress * 2 * math.pi) + 1.0) / 2.0;
-      double handX1 = w / 2 - 10.0;
-      double handX2 = w / 2 + 10.0;
       double handY = 20.0;
       double shoulderX = w / 2;
       double shoulderY = 48.0 - 26.0 * phase;
@@ -2445,71 +2625,105 @@ class StickFigurePainter extends CustomPainter {
       double kneeY = 88.0 - 26.0 * phase;
       double feetX = w / 2 - 3.0 * phase;
       double feetY = 96.0 - 26.0 * phase;
-      double elbowX1 = handX1 - 5.0 * phase;
-      double elbowY1 = 20.0 + 28.0 * (1 - phase) + 14.0 * phase;
-      double elbowX2 = handX2 + 5.0 * phase;
-      double elbowY2 = 20.0 + 28.0 * (1 - phase) + 14.0 * phase;
 
+      // Hand anchors on the bar
+      double handX1 = w / 2 - 14.0;
+      double handX2 = w / 2 + 14.0;
+
+      // Elbow points bending symmetrically
+      double elbowX1 = handX1 - 8.0 * (1.0 - phase);
+      double elbowY1 = 20.0 + 26.0 * (1.0 - phase) + 12.0 * phase;
+      double elbowX2 = handX2 + 8.0 * (1.0 - phase);
+      double elbowY2 = 20.0 + 26.0 * (1.0 - phase) + 12.0 * phase;
+
+      // --- SPINE CORE ---
       if (isGlowPass) {
-        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(hipX, hipY), glowPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, glowPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX, kneeY), glowPaint);
-        canvas.drawLine(Offset(kneeX, kneeY), Offset(feetX, feetY), glowPaint);
-        canvas.drawLine(Offset(handX1, handY), Offset(elbowX1, elbowY1), limbGlowPaint);
-        canvas.drawLine(Offset(elbowX1, elbowY1), Offset(shoulderX, shoulderY), limbGlowPaint);
-        canvas.drawLine(Offset(handX2, handY), Offset(elbowX2, elbowY2), limbGlowPaint);
-        canvas.drawLine(Offset(elbowX2, elbowY2), Offset(shoulderX, shoulderY), limbGlowPaint);
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(hipX, hipY), spineGlow);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spineGlow);
+        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX, kneeY), spineGlow);
+        canvas.drawLine(Offset(kneeX, kneeY), Offset(feetX, feetY), spineGlow);
       } else {
-        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(hipX, hipY), neonPaint);
+        canvas.drawLine(Offset(shoulderX, shoulderY), Offset(hipX, hipY), spinePaint);
         canvas.drawCircle(Offset(headX, headY), 8.0, fillPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, neonPaint);
-        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX, kneeY), neonPaint);
-        canvas.drawLine(Offset(kneeX, kneeY), Offset(feetX, feetY), neonPaint);
-        canvas.drawLine(Offset(handX1, handY), Offset(elbowX1, elbowY1), limbPaint);
-        canvas.drawLine(Offset(elbowX1, elbowY1), Offset(shoulderX, shoulderY), limbPaint);
-        canvas.drawLine(Offset(handX2, handY), Offset(elbowX2, elbowY2), limbPaint);
-        canvas.drawLine(Offset(elbowX2, elbowY2), Offset(shoulderX, shoulderY), limbPaint);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spinePaint);
+        canvas.drawLine(Offset(hipX, hipY), Offset(kneeX, kneeY), spinePaint);
+        canvas.drawLine(Offset(kneeX, kneeY), Offset(feetX, feetY), spinePaint);
+        
+        // Gaze Lock (gaze faces upwards towards the bar!)
+        double gazeEndX = headX;
+        double gazeEndY = headY - 18.0;
+        canvas.drawLine(Offset(headX, headY - 4.0), Offset(gazeEndX, gazeEndY), Paint()
+          ..color = mainColor.withOpacity(0.35 * opacity)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0);
+        canvas.drawCircle(Offset(gazeEndX, gazeEndY), 1.5, Paint()..color = mainColor.withOpacity(0.5 * opacity)..style = PaintingStyle.fill);
+      }
+
+      // --- DUAL ARMS (Symmetrical) ---
+      if (isGlowPass) {
+        canvas.drawLine(Offset(handX1, handY), Offset(elbowX1, elbowY1), nearGlow);
+        canvas.drawLine(Offset(elbowX1, elbowY1), Offset(shoulderX, shoulderY), nearGlow);
+        canvas.drawLine(Offset(handX2, handY), Offset(elbowX2, elbowY2), nearGlow);
+        canvas.drawLine(Offset(elbowX2, elbowY2), Offset(shoulderX, shoulderY), nearGlow);
+      } else {
+        canvas.drawLine(Offset(handX1, handY), Offset(elbowX1, elbowY1), nearPaint);
+        canvas.drawLine(Offset(elbowX1, elbowY1), Offset(shoulderX, shoulderY), nearPaint);
+        canvas.drawLine(Offset(handX2, handY), Offset(elbowX2, elbowY2), nearPaint);
+        canvas.drawLine(Offset(elbowX2, elbowY2), Offset(shoulderX, shoulderY), nearPaint);
         
         _drawCrosshair(canvas, Offset(shoulderX, shoulderY), mainColor.withOpacity(opacity));
       }
+
+      // --- PULLUP LIMIT BREAK SHOCKWAVE AT THE TOP ---
+      if (!isGlowPass && localProgress > 0.44 && localProgress < 0.56) {
+        double rip = ((localProgress - 0.44) / 0.12);
+        canvas.drawCircle(Offset(shoulderX, shoulderY), rip * 22.0, Paint()
+          ..color = mainColor.withOpacity(0.5 * (1.0 - rip) * opacity)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0);
+      }
+
     } else if (key.contains('water') || key.contains('drink') || key.contains('hydration')) {
-      double phase = (math.sin(localProgress * 2 * math.pi) + 1.0) / 2.0;
       double hipX = w / 2 - 10.0;
       double hipY = h - 20.0;
       double torsoX = w / 2 - 10.0;
       double torsoY = h - 48.0;
       double headX = w / 2 - 10.0 + 3.0 * phase;
       double headY = torsoY - 10.0;
+      
       double armLeftX = w / 2 - 20.0;
       double armLeftY = torsoY + 12.0;
       double handLeftX = w / 2 - 10.0;
       double handLeftY = h - 20.0;
+      
       double elbowRightX = w / 2 + 2.0 * phase;
       double elbowRightY = torsoY + 8.0 - 10.0 * phase;
       double handRightX = w / 2 - 5.0 + 10.0 * phase;
       double handRightY = torsoY - 5.0 * phase;
 
       if (isGlowPass) {
-        canvas.drawLine(Offset(torsoX, torsoY), Offset(hipX, hipY), glowPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, glowPaint);
-        canvas.drawLine(Offset(torsoX, torsoY), Offset(armLeftX, armLeftY), limbGlowPaint);
-        canvas.drawLine(Offset(armLeftX, armLeftY), Offset(handLeftX, handLeftY), limbGlowPaint);
-        canvas.drawLine(Offset(torsoX, torsoY), Offset(elbowRightX, elbowRightY), limbGlowPaint);
-        canvas.drawLine(Offset(elbowRightX, elbowRightY), Offset(handRightX, handRightY), limbGlowPaint);
+        canvas.drawLine(Offset(torsoX, torsoY), Offset(hipX, hipY), spineGlow);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spineGlow);
+        canvas.drawLine(Offset(torsoX, torsoY), Offset(armLeftX, armLeftY), nearGlow);
+        canvas.drawLine(Offset(armLeftX, armLeftY), Offset(handLeftX, handLeftY), nearGlow);
+        canvas.drawLine(Offset(torsoX, torsoY), Offset(elbowRightX, elbowRightY), nearGlow);
+        canvas.drawLine(Offset(elbowRightX, elbowRightY), Offset(handRightX, handRightY), nearGlow);
       } else {
-        canvas.drawLine(Offset(torsoX, torsoY), Offset(hipX, hipY), neonPaint);
+        canvas.drawLine(Offset(torsoX, torsoY), Offset(hipX, hipY), spinePaint);
         canvas.drawCircle(Offset(headX, headY), 8.0, fillPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, neonPaint);
-        canvas.drawLine(Offset(torsoX, torsoY), Offset(armLeftX, armLeftY), limbPaint);
-        canvas.drawLine(Offset(armLeftX, armLeftY), Offset(handLeftX, handLeftY), limbPaint);
-        canvas.drawLine(Offset(torsoX, torsoY), Offset(elbowRightX, elbowRightY), limbPaint);
-        canvas.drawLine(Offset(elbowRightX, elbowRightY), Offset(handRightX, handRightY), limbPaint);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spinePaint);
+        canvas.drawLine(Offset(torsoX, torsoY), Offset(armLeftX, armLeftY), nearPaint);
+        canvas.drawLine(Offset(armLeftX, armLeftY), Offset(handLeftX, handLeftY), nearPaint);
+        canvas.drawLine(Offset(torsoX, torsoY), Offset(elbowRightX, elbowRightY), nearPaint);
+        canvas.drawLine(Offset(elbowRightX, elbowRightY), Offset(handRightX, handRightY), nearPaint);
 
+        // Drinking droplets physics
         if (phase > 0.4) {
           double dropProgress = (phase - 0.4) / 0.6;
           double dropX = handRightX + (headX - handRightX) * dropProgress;
           double dropY = handRightY + (headY - handRightY) * dropProgress;
-          canvas.drawCircle(Offset(dropX, dropY), 2.0, Paint()..color = limbColor.withOpacity(opacity)..style = PaintingStyle.fill);
+          double throatShake = 1.0 * math.sin(localProgress * 2 * math.pi * 8);
+          canvas.drawCircle(Offset(dropX + throatShake, dropY), 2.0, Paint()..color = limbColor.withOpacity(opacity)..style = PaintingStyle.fill);
         }
         
         canvas.drawRect(Rect.fromLTWH(w - 60, h - 55, 16, 24), floorPaint);
@@ -2532,16 +2746,16 @@ class StickFigurePainter extends CustomPainter {
       double handY = torsoY - 10.0 * phase;
 
       if (isGlowPass) {
-        canvas.drawLine(Offset(torsoX, torsoY), Offset(hipX, hipY), glowPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, glowPaint);
-        canvas.drawLine(Offset(torsoX, torsoY), Offset(elbowX, elbowY), limbGlowPaint);
-        canvas.drawLine(Offset(elbowX, elbowY), Offset(handX, handY), limbGlowPaint);
+        canvas.drawLine(Offset(torsoX, torsoY), Offset(hipX, hipY), spineGlow);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spineGlow);
+        canvas.drawLine(Offset(torsoX, torsoY), Offset(elbowX, elbowY), nearGlow);
+        canvas.drawLine(Offset(elbowX, elbowY), Offset(handX, handY), nearGlow);
       } else {
-        canvas.drawLine(Offset(torsoX, torsoY), Offset(hipX, hipY), neonPaint);
+        canvas.drawLine(Offset(torsoX, torsoY), Offset(hipX, hipY), spinePaint);
         canvas.drawCircle(Offset(headX, headY), 8.0, fillPaint);
-        canvas.drawCircle(Offset(headX, headY), 8.0, neonPaint);
-        canvas.drawLine(Offset(torsoX, torsoY), Offset(elbowX, elbowY), limbPaint);
-        canvas.drawLine(Offset(elbowX, elbowY), Offset(handX, handY), limbPaint);
+        canvas.drawCircle(Offset(headX, headY), 8.0, spinePaint);
+        canvas.drawLine(Offset(torsoX, torsoY), Offset(elbowX, elbowY), nearPaint);
+        canvas.drawLine(Offset(elbowX, elbowY), Offset(handX, handY), nearPaint);
       }
     }
   }
