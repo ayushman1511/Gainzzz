@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Abyssal Protocol - Nexus Viper Stats</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Geist:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#ffb4a9",
+                        "outline": "#8f706b",
+                        "surface-container-highest": "#eae1d9",
+                        "on-primary-fixed-variant": "#930002",
+                        "surface-bright": "#fff8f3",
+                        "secondary-fixed": "#d1e8db",
+                        "outline-variant": "#e4beb8",
+                        "inverse-primary": "#ffb4a9",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#000965",
+                        "on-primary": "#ffffff",
+                        "on-background": "#1f1b16",
+                        "tertiary": "#0016a7",
+                        "surface-variant": "#eae1d9",
+                        "on-secondary-container": "#54695e",
+                        "on-primary-fixed": "#410000",
+                        "primary-container": "#9a0002",
+                        "on-surface-variant": "#5b403c",
+                        "inverse-on-surface": "#f8efe7",
+                        "surface-dim": "#e1d9d1",
+                        "inverse-surface": "#34302a",
+                        "background": "#efe6de",
+                        "tertiary-fixed": "#dfe0ff",
+                        "tertiary-container": "#0022e6",
+                        "on-primary-container": "#ffa294",
+                        "surface": "#efe6de",
+                        "on-tertiary-fixed-variant": "#0020dc",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#b5ccbf",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#fbf2ea",
+                        "primary": "#6f0001",
+                        "surface-tint": "#b81f15",
+                        "primary-fixed": "#ffdad5",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#374b41",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#f0e7df",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#1f1b16",
+                        "tertiary-fixed-dim": "#bdc2ff",
+                        "secondary": "#4f6359",
+                        "on-tertiary-container": "#adb5ff",
+                        "surface-container": "#f5ece4",
+                        "secondary-container": "#d1e8db",
+                        "on-secondary-fixed": "#0c1f17"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "margin-desktop": "64px",
+                        "unit": "8px",
+                        "margin-mobile": "16px",
+                        "stack-lg": "64px",
+                        "stack-sm": "12px",
+                        "stack-md": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Anton"],
+                        "headline-lg": ["Anton"],
+                        "title-md": ["Geist"],
+                        "label-sm": ["Geist"],
+                        "body-md": ["Geist"],
+                        "display-lg": ["Anton"],
+                        "body-lg": ["Geist"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["36px", { "lineHeight": "1.1", "fontWeight": "400" }],
+                        "headline-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "0.01em", "fontWeight": "400" }],
+                        "title-md": ["20px", { "lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg": ["80px", { "lineHeight": "1.0", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #EFE6DE; }
+        .text-custom { color: #9A0002; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(154, 0, 2, 0.05);
+            border-radius: 24px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md min-h-screen pt-16 pb-24 antialiased selection:bg-primary selection:text-on-primary text-custom">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 glass-card rounded-none border-t-0 border-l-0 border-r-0 flex items-center justify-between px-margin-mobile h-16 max-w-container-max mx-auto shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-on-surface/20 shrink-0">
+<img class="w-full h-full object-cover" data-alt="A close-up, high-contrast portrait of a futuristic operative wearing a sleek, dark visor. The lighting is harsh and dramatic, creating a stark tech-noir aesthetic with deep blacks and minimal color. The overall vibe is intense, secretive, and highly disciplined, fitting a highly classified agent profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-UYGIhDBXggq5ADuSSq1DGbcTd7RKruPP9hTKR4Wei12COX7QLEe1IR_BsF2dvLCjCutr10lCYQHLIGIc5Lv6tlgMesz2jKc5JTGqQO7oqcAgOYEwD2SRBzWCkunrPht0U2XpcEA6BxcGlZDEN5oXe_j0yoN1xJcPlmrElGw_iHtt6yiEhHNRQsqIqidHFAqHH2mTQe4II1xivEKysjDg0uY3aElIm8FS_c7Djc5affv0uzeK8ErqLowIbs7OHohFT8WTP4Dws3my"/>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-custom tracking-tighter uppercase truncate pt-1">
+                ABYSSAL PROTOCOL
+            </h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface hover:text-custom transition-colors duration-300 active:scale-95">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-container-max mx-auto px-margin-mobile pt-stack-md flex flex-col gap-stack-lg">
+<!-- Profile Identity -->
+<section class="flex flex-col gap-unit">
+<h2 class="font-display-lg text-display-lg text-on-surface tracking-tighter uppercase leading-none">NEXUS<br/>VIPER</h2>
+<div class="flex items-center gap-2 mt-2">
+<span class="inline-block w-2 h-2 bg-primary rounded-none"></span>
+<span class="font-label-sm text-label-sm text-custom uppercase tracking-widest">Status: Active / Authorized</span>
+</div>
+</section>
+<!-- Core Metrics (Bento Grid Style) -->
+<section class="grid grid-cols-2 gap-4">
+<!-- EXP Card -->
+<div class="glass-card p-4 flex flex-col gap-stack-sm hover:border-primary/50 transition-colors duration-300">
+<div class="flex justify-between items-end">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Experience</span>
+<span class="font-title-md text-title-md text-on-surface">84%</span>
+</div>
+<div class="h-1 w-full bg-on-surface/10 relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-primary" style="width: 84%;"></div>
+</div>
+</div>
+<!-- Sync Rate Card -->
+<div class="glass-card p-4 flex flex-col gap-stack-sm hover:border-primary/50 transition-colors duration-300">
+<div class="flex justify-between items-end">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Sync Rate</span>
+<span class="font-title-md text-title-md text-on-surface">92%</span>
+</div>
+<div class="h-1 w-full bg-on-surface/10 relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-primary" style="width: 92%;"></div>
+</div>
+</div>
+</section>
+<!-- Combat Matrix (Minimalist Bar Representation) -->
+<section class="glass-card p-margin-mobile relative overflow-hidden flex flex-col gap-stack-sm">
+<!-- Background Accent Graphic -->
+<div class="absolute -right-16 -top-16 opacity-5 pointer-events-none">
+<span class="material-symbols-outlined text-[200px]" data-icon="radar">radar</span>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface uppercase border-b border-on-surface/10 pb-2 mb-2">Combat Matrix</h3>
+<div class="flex flex-col gap-3">
+<!-- STR -->
+<div class="flex items-center gap-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant w-8">STR</span>
+<div class="flex-1 h-2 bg-on-surface/5 relative">
+<div class="absolute top-0 left-0 h-full bg-on-surface" style="width: 75%;"></div>
+</div>
+</div>
+<!-- AGI -->
+<div class="flex items-center gap-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant w-8">AGI</span>
+<div class="flex-1 h-2 bg-on-surface/5 relative">
+<div class="absolute top-0 left-0 h-full bg-primary" style="width: 95%;"></div>
+</div>
+</div>
+<!-- INT -->
+<div class="flex items-center gap-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant w-8">INT</span>
+<div class="flex-1 h-2 bg-on-surface/5 relative">
+<div class="absolute top-0 left-0 h-full bg-on-surface" style="width: 60%;"></div>
+</div>
+</div>
+<!-- TEC -->
+<div class="flex items-center gap-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant w-8">TEC</span>
+<div class="flex-1 h-2 bg-on-surface/5 relative">
+<div class="absolute top-0 left-0 h-full bg-primary" style="width: 88%;"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Active Directives -->
+<section class="glass-card p-margin-mobile flex flex-col">
+<h3 class="font-title-md text-title-md text-on-surface uppercase border-b border-on-surface/20 pb-2 mb-4">Active Directives</h3>
+<ul class="flex flex-col border-t border-on-surface/10">
+<!-- Directive 1 -->
+<li class="group relative flex items-center justify-between py-4 border-b border-on-surface/10 cursor-pointer hover:bg-surface-container/50 transition-colors">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary scale-y-0 group-hover:scale-y-100 transition-transform origin-center"></div>
+<div class="flex flex-col gap-1 pl-4">
+<span class="font-title-md text-title-md text-on-surface">Demon King Slayer</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Target elimination protocol</span>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity pr-2" data-icon="arrow_forward">arrow_forward</span>
+</li>
+<!-- Directive 2 -->
+<li class="group relative flex items-center justify-between py-4 border-b border-on-surface/10 cursor-pointer hover:bg-surface-container/50 transition-colors">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary scale-y-0 group-hover:scale-y-100 transition-transform origin-center"></div>
+<div class="flex flex-col gap-1 pl-4">
+<span class="font-title-md text-title-md text-on-surface">Iron Will</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Endurance enhancement active</span>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity pr-2" data-icon="arrow_forward">arrow_forward</span>
+</li>
+</ul>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-6 left-4 right-4 z-50 flex justify-around items-center px-4 py-2 glass-card md:hidden shadow-[0_8px_32px_rgba(154,0,2,0.1)]">
+<a class="flex flex-col items-center justify-center w-12 h-12 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-primary-container/20 transition-all duration-200 active:translate-y-1 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+</a>
+<a class="flex flex-col items-center justify-center w-12 h-12 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-primary-container/20 transition-all duration-200 active:translate-y-1 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+</a>
+<a class="flex flex-col items-center justify-center w-12 h-12 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-primary-container/20 transition-all duration-200 active:translate-y-1 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="add_box">add_box</span>
+</a>
+<a class="flex flex-col items-center justify-center w-12 h-12 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-primary-container/20 transition-all duration-200 active:translate-y-1 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+</a>
+<!-- Active Tab: Person (Profile) -->
+<a class="flex flex-col items-center justify-center w-12 h-12 text-on-primary bg-primary rounded-xl p-2 scale-110 transition-all duration-300 active:translate-y-1 shadow-[0_4px_12px_rgba(154,0,2,0.3)]" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</a>
+</nav>
+</body></html>
