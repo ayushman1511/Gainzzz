@@ -480,13 +480,13 @@ function calculateArchetypeAssignment() {
     document.getElementById('assignment-rank-text').innerText = `${assignedRank}-RANK ADAPTIVE HUNTER`;
     document.getElementById('assignment-description').innerText = desc;
     
-    // Update active primary colors
-    let activeGlow = '#9a0002'; // default red
+    // Update active primary colors matching Zenith UI design system
+    let activeGlow = '#9a0002'; // default light mode Monolith Cherry Red
     if (state.theme === 'dark') {
-        if (assignedClass === 'Shadow Monarch') activeGlow = '#8b5cf6'; // purple
-        else if (assignedClass === 'Flame Warrior' || assignedClass === 'Beast Tank') activeGlow = '#ff003c'; // neon red
-        else if (assignedClass === 'Celestial Runner') activeGlow = '#00ff66'; // green
-        else if (assignedClass === 'Agile Assassin' || assignedClass === 'Iron Guardian') activeGlow = '#00e5ff'; // blue
+        if (assignedClass === 'Shadow Monarch') activeGlow = '#bd00ff'; // Zenith Hyper Purple
+        else if (assignedClass === 'Flame Warrior' || assignedClass === 'Beast Tank') activeGlow = '#c3f400'; // Zenith Electric Lime
+        else if (assignedClass === 'Celestial Runner') activeGlow = '#c3f400'; // Zenith Electric Lime
+        else if (assignedClass === 'Agile Assassin' || assignedClass === 'Iron Guardian') activeGlow = '#00eefc'; // Zenith Cyber Cyan
     }
     
     document.documentElement.style.setProperty('--primary', activeGlow);

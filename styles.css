@@ -39,34 +39,38 @@
 }
 
 @layer theme {
-    /* DEFAULT THEME: Abyssal Tech-Noir (Dark Mode) */
+    /* DEFAULT THEME: Abyssal Tech-Noir (Zenith Training Protocol) */
     :root {
         --theme-mode: dark;
-        --bg-primary: #08080b;
-        --bg-secondary: #111116;
-        --bg-tertiary: #181822;
+        --bg-primary: #131313;
+        --bg-secondary: #1c1b1b;
+        --bg-tertiary: #201f1f;
         
-        --text-primary: #f3f4f6;
-        --text-secondary: #9ca3af;
-        --text-muted: #4b5563;
+        --text-primary: #e5e2e1;
+        --text-secondary: #c4c9ac;
+        --text-muted: #8e9379;
         
-        /* Neon Accents */
-        --accent-green: #00ff66;
-        --accent-blue: #00e5ff;
-        --accent-purple: #8b5cf6;
-        --accent-red: #ff003c;
-        --accent-silver: #e2e8f0;
+        /* Neon Accents from Zenith Design System */
+        --accent-green: #c3f400;
+        --accent-blue: #00eefc;
+        --accent-purple: #bd00ff;
+        --accent-red: #ffb4ab;
+        --accent-silver: #e5e2e1;
         
-        /* Active Theme State Default */
-        --accent-glow: var(--accent-purple);
-        --accent-glow-rgb: 139, 92, 246;
-        --accent-text: #ffffff;
+        /* Active Theme State Default (Peak Volt) */
+        --primary: #ffffff;
+        --primary-container: #c3f400;
+        --on-primary: #131313;
         
-        /* Glassmorphism settings */
-        --glass-bg: rgba(17, 17, 22, 0.65);
+        --accent-glow: var(--accent-green);
+        --accent-glow-rgb: 195, 244, 0;
+        --accent-text: #131313;
+        
+        /* Glassmorphism settings - Zenith Lens */
+        --glass-bg: rgba(20, 20, 20, 0.45);
         --glass-border: rgba(255, 255, 255, 0.08);
-        --glass-border-active: rgba(139, 92, 246, 0.4);
-        --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+        --glass-border-active: rgba(195, 244, 0, 0.35);
+        --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.65);
         
         /* Border Radius & Geometry */
         --radius-sm: 4px;
