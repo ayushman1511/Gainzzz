@@ -704,3 +704,56 @@
     50% { transform: scaleY(0.15); }
 }
 
+/* --- VEO-3 CYBERNETIC HUD & MOTION GHOST SHADOW TRAILS --- */
+.ghost-figure {
+    pointer-events: none;
+}
+.ghost-figure-1 {
+    opacity: 0.28 !important;
+    filter: drop-shadow(0 0 1px var(--accent-blue));
+}
+.ghost-figure-2 {
+    opacity: 0.12 !important;
+    filter: drop-shadow(0 0 1px var(--accent-purple));
+}
+
+/* Delay ghost elements relative to the active loop */
+.ghost-figure-1 .pushup-body-group, .ghost-figure-1 .pushup-arm,
+.ghost-figure-1 .squat-body-group, .ghost-figure-1 .squat-leg-r, .ghost-figure-1 .squat-leg-l,
+.ghost-figure-1 .run-body-group, .ghost-figure-1 .run-leg-l, .ghost-figure-1 .run-leg-r, .ghost-figure-1 .run-arm-l, .ghost-figure-1 .run-arm-r,
+.ghost-figure-1 .pullup-body-group, .ghost-figure-1 .pullup-arm-l, .ghost-figure-1 .pullup-arm-r,
+.ghost-figure-1 .water-body, .ghost-figure-1 .water-droplet, .ghost-figure-1 .water-fill {
+    animation-delay: -0.12s !important;
+}
+
+.ghost-figure-2 .pushup-body-group, .ghost-figure-2 .pushup-arm,
+.ghost-figure-2 .squat-body-group, .ghost-figure-2 .squat-leg-r, .ghost-figure-2 .squat-leg-l,
+.ghost-figure-2 .run-body-group, .ghost-figure-2 .run-leg-l, .ghost-figure-2 .run-leg-r, .ghost-figure-2 .run-arm-l, .ghost-figure-2 .run-arm-r,
+.ghost-figure-2 .pullup-body-group, .ghost-figure-2 .pullup-arm-l, .ghost-figure-2 .pullup-arm-r,
+.ghost-figure-2 .water-body, .ghost-figure-2 .water-droplet, .ghost-figure-2 .water-fill {
+    animation-delay: -0.24s !important;
+}
+
+/* Cybernetic scanline laser effect */
+.web-laser {
+    animation: web-laser-sweep 2.4s infinite linear;
+}
+@keyframes web-laser-sweep {
+    0% { transform: translateY(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(100px); opacity: 0; }
+}
+
+/* Joint crosshairs */
+.web-crosshair {
+    stroke-dasharray: 2 1;
+    animation: rotate-crosshair 4s infinite linear;
+    transform-origin: center;
+}
+@keyframes rotate-crosshair {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+

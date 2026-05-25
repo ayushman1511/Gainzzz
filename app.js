@@ -845,77 +845,232 @@ function generateLocalCuratedMissionsWeb() {
 
 function getWebStickFigureAnimation(id) {
     const key = id.toLowerCase();
+    
+    // Cybernetic scanning grid and sweep laser
+    const hudBackground = `
+        <path d="M 0 10 L 200 10 M 0 30 L 200 30 M 0 50 L 200 50 M 0 70 L 200 70 M 0 90 L 200 90 M 20 0 L 20 100 M 40 0 L 40 100 M 60 0 L 60 100 M 80 0 L 80 100 M 100 0 L 100 100 M 120 0 L 120 100 M 140 0 L 140 100 M 160 0 L 160 100 M 180 0 L 180 100" stroke="rgba(255,255,255,0.03)" stroke-width="0.8" />
+        <line x1="0" y1="0" x2="200" y2="0" class="web-laser" stroke="var(--accent-blue)" stroke-opacity="0.18" stroke-width="1.2" />
+        
+        <!-- Monospace HUD elements inside SVG -->
+        <text x="8" y="10" fill="var(--accent-purple)" font-family="monospace" font-size="5" font-weight="bold" opacity="0.6">VEO-3 // RENDER NODE</text>
+        <text x="8" y="16" fill="var(--accent-blue)" font-family="monospace" font-size="4.5" font-weight="bold" opacity="0.6">KINETIC RESOLVER v3.2</text>
+        <text x="145" y="10" fill="var(--accent-blue)" font-family="monospace" font-size="4.5" font-weight="bold" opacity="0.6">FPS: 120.0</text>
+    `;
+
     if (key.includes('pushup') || key.includes('chest')) {
         return `
         <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+            ${hudBackground}
             <line x1="20" y1="85" x2="180" y2="85" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
-            <g class="pushup-body-group">
+            
+            <!-- Trail 2 (Oldest, very faint) -->
+            <g class="ghost-figure ghost-figure-2">
                 <line x1="40" y1="80" x2="80" y2="72" />
                 <line x1="80" y1="72" x2="130" y2="60" />
                 <circle cx="142" cy="56" r="8" fill="var(--bg-primary)" />
                 <polyline points="120,62 105,73 120,85" class="pushup-arm" stroke="var(--accent-blue)" />
+            </g>
+
+            <!-- Trail 1 (Medium faint) -->
+            <g class="ghost-figure ghost-figure-1">
+                <line x1="40" y1="80" x2="80" y2="72" />
+                <line x1="80" y1="72" x2="130" y2="60" />
+                <circle cx="142" cy="56" r="8" fill="var(--bg-primary)" />
+                <polyline points="120,62 105,73 120,85" class="pushup-arm" stroke="var(--accent-blue)" />
+            </g>
+
+            <!-- Active Figure (Full intensity) -->
+            <g class="active-figure">
+                <line x1="40" y1="80" x2="80" y2="72" />
+                <line x1="80" y1="72" x2="130" y2="60" />
+                <circle cx="142" cy="56" r="8" fill="var(--bg-primary)" />
+                <polyline points="120,62 105,73 120,85" class="pushup-arm" stroke="var(--accent-blue)" />
+                <!-- Cybernetic crosshair joints -->
+                <circle cx="130" cy="60" r="4" class="web-crosshair" stroke="var(--accent-purple)" stroke-width="0.8" />
+                <circle cx="80" cy="72" r="4" class="web-crosshair" stroke="var(--accent-blue)" stroke-width="0.8" />
             </g>
         </svg>`;
     } else if (key.includes('squat') || key.includes('leg') || key.includes('lunge')) {
         return `
         <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+            ${hudBackground}
             <line x1="20" y1="85" x2="180" y2="85" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
-            <g class="squat-body-group">
-                <line x1="100" y1="52" x2="100" y2="30" />
-                <circle cx="100" cy="20" r="8" fill="var(--bg-primary)" />
-                <line x1="100" y1="34" x2="120" y2="34" stroke="var(--accent-blue)" />
+            
+            <!-- Trail 2 -->
+            <g class="ghost-figure ghost-figure-2">
+                <g class="squat-body-group">
+                    <line x1="100" y1="52" x2="100" y2="30" />
+                    <circle cx="100" cy="20" r="8" fill="var(--bg-primary)" />
+                    <line x1="100" y1="34" x2="120" y2="34" stroke="var(--accent-blue)" />
+                </g>
+                <polyline points="100,52 108,68 100,85" class="squat-leg-r" />
+                <polyline points="100,52 92,68 100,85" class="squat-leg-l" />
             </g>
-            <polyline points="100,52 108,68 100,85" class="squat-leg-r" />
-            <polyline points="100,52 92,68 100,85" class="squat-leg-l" />
+
+            <!-- Trail 1 -->
+            <g class="ghost-figure ghost-figure-1">
+                <g class="squat-body-group">
+                    <line x1="100" y1="52" x2="100" y2="30" />
+                    <circle cx="100" cy="20" r="8" fill="var(--bg-primary)" />
+                    <line x1="100" y1="34" x2="120" y2="34" stroke="var(--accent-blue)" />
+                </g>
+                <polyline points="100,52 108,68 100,85" class="squat-leg-r" />
+                <polyline points="100,52 92,68 100,85" class="squat-leg-l" />
+            </g>
+
+            <!-- Active -->
+            <g class="active-figure">
+                <g class="squat-body-group">
+                    <line x1="100" y1="52" x2="100" y2="30" />
+                    <circle cx="100" cy="20" r="8" fill="var(--bg-primary)" />
+                    <line x1="100" y1="34" x2="120" y2="34" stroke="var(--accent-blue)" />
+                    <!-- Cybernetic crosshair on shoulder -->
+                    <circle cx="100" cy="30" r="4" class="web-crosshair" stroke="var(--accent-purple)" stroke-width="0.8" />
+                </g>
+                <polyline points="100,52 108,68 100,85" class="squat-leg-r" />
+                <polyline points="100,52 92,68 100,85" class="squat-leg-l" />
+                <!-- Cybernetic crosshair on hip -->
+                <circle cx="100" cy="52" r="4" class="web-crosshair" stroke="var(--accent-blue)" stroke-width="0.8" />
+            </g>
         </svg>`;
     } else if (key.includes('run') || key.includes('walk') || key.includes('cardio')) {
         return `
         <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+            ${hudBackground}
             <line x1="20" y1="85" x2="180" y2="85" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
-            <g class="run-body-group">
-                <line x1="100" y1="50" x2="104" y2="32" />
-                <circle cx="106" cy="22" r="8" fill="var(--bg-primary)" />
-                <polyline points="104,34 96,44 106,50" class="run-arm-l" stroke="var(--accent-blue)" />
-                <polyline points="104,34 112,44 122,42" class="run-arm-r" stroke="var(--accent-blue)" />
+            
+            <!-- Trail 2 -->
+            <g class="ghost-figure ghost-figure-2">
+                <g class="run-body-group">
+                    <line x1="100" y1="50" x2="104" y2="32" />
+                    <circle cx="106" cy="22" r="8" fill="var(--bg-primary)" />
+                    <polyline points="104,34 96,44 106,50" class="run-arm-l" stroke="var(--accent-blue)" />
+                    <polyline points="104,34 112,44 122,42" class="run-arm-r" stroke="var(--accent-blue)" />
+                </g>
+                <polyline points="100,50 90,62 80,82" class="run-leg-l" />
+                <polyline points="100,50 110,62 120,82" class="run-leg-r" />
             </g>
-            <polyline points="100,50 90,62 80,82" class="run-leg-l" />
-            <polyline points="100,50 110,62 120,82" class="run-leg-r" />
+
+            <!-- Trail 1 -->
+            <g class="ghost-figure ghost-figure-1">
+                <g class="run-body-group">
+                    <line x1="100" y1="50" x2="104" y2="32" />
+                    <circle cx="106" cy="22" r="8" fill="var(--bg-primary)" />
+                    <polyline points="104,34 96,44 106,50" class="run-arm-l" stroke="var(--accent-blue)" />
+                    <polyline points="104,34 112,44 122,42" class="run-arm-r" stroke="var(--accent-blue)" />
+                </g>
+                <polyline points="100,50 90,62 80,82" class="run-leg-l" />
+                <polyline points="100,50 110,62 120,82" class="run-leg-r" />
+            </g>
+
+            <!-- Active -->
+            <g class="active-figure">
+                <g class="run-body-group">
+                    <line x1="100" y1="50" x2="104" y2="32" />
+                    <circle cx="106" cy="22" r="8" fill="var(--bg-primary)" />
+                    <polyline points="104,34 96,44 106,50" class="run-arm-l" stroke="var(--accent-blue)" />
+                    <polyline points="104,34 112,44 122,42" class="run-arm-r" stroke="var(--accent-blue)" />
+                    <!-- Cybernetic crosshair on shoulder -->
+                    <circle cx="104" cy="32" r="4" class="web-crosshair" stroke="var(--accent-purple)" stroke-width="0.8" />
+                </g>
+                <polyline points="100,50 90,62 80,82" class="run-leg-l" />
+                <polyline points="100,50 110,62 120,82" class="run-leg-r" />
+            </g>
         </svg>`;
     } else if (key.includes('pull') || key.includes('back') || key.includes('row')) {
         return `
         <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+            ${hudBackground}
             <line x1="60" y1="20" x2="140" y2="20" stroke="rgba(255,255,255,0.4)" stroke-width="3" />
-            <g class="pullup-body-group">
-                <line x1="100" y1="48" x2="100" y2="72" />
-                <circle cx="100" cy="38" r="8" fill="var(--bg-primary)" />
-                <polyline points="90,20 85,34 100,48" class="pullup-arm-l" stroke="var(--accent-blue)" />
-                <polyline points="110,20 115,34 100,48" class="pullup-arm-r" stroke="var(--accent-blue)" />
-                <line x1="100" y1="72" x2="96" y2="88" />
-                <line x1="100" y1="72" x2="104" y2="88" />
+            
+            <!-- Trail 2 -->
+            <g class="ghost-figure ghost-figure-2">
+                <g class="pullup-body-group">
+                    <line x1="100" y1="48" x2="100" y2="72" />
+                    <circle cx="100" cy="38" r="8" fill="var(--bg-primary)" />
+                    <polyline points="90,20 85,34 100,48" class="pullup-arm-l" stroke="var(--accent-blue)" />
+                    <polyline points="110,20 115,34 100,48" class="pullup-arm-r" stroke="var(--accent-blue)" />
+                    <line x1="100" y1="72" x2="96" y2="88" />
+                    <line x1="100" y1="72" x2="104" y2="88" />
+                </g>
+            </g>
+
+            <!-- Trail 1 -->
+            <g class="ghost-figure ghost-figure-1">
+                <g class="pullup-body-group">
+                    <line x1="100" y1="48" x2="100" y2="72" />
+                    <circle cx="100" cy="38" r="8" fill="var(--bg-primary)" />
+                    <polyline points="90,20 85,34 100,48" class="pullup-arm-l" stroke="var(--accent-blue)" />
+                    <polyline points="110,20 115,34 100,48" class="pullup-arm-r" stroke="var(--accent-blue)" />
+                    <line x1="100" y1="72" x2="96" y2="88" />
+                    <line x1="100" y1="72" x2="104" y2="88" />
+                </g>
+            </g>
+
+            <!-- Active -->
+            <g class="active-figure">
+                <g class="pullup-body-group">
+                    <line x1="100" y1="48" x2="100" y2="72" />
+                    <circle cx="100" cy="38" r="8" fill="var(--bg-primary)" />
+                    <polyline points="90,20 85,34 100,48" class="pullup-arm-l" stroke="var(--accent-blue)" />
+                    <polyline points="110,20 115,34 100,48" class="pullup-arm-r" stroke="var(--accent-blue)" />
+                    <line x1="100" y1="72" x2="96" y2="88" />
+                    <line x1="100" y1="72" x2="104" y2="88" />
+                    <!-- Cybernetic crosshair on shoulder -->
+                    <circle cx="100" cy="48" r="4" class="web-crosshair" stroke="var(--accent-purple)" stroke-width="0.8" />
+                </g>
             </g>
         </svg>`;
     } else if (key.includes('water') || key.includes('drink') || key.includes('hydration')) {
         return `
         <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
-            <g class="water-body">
-                <line x1="90" y1="80" x2="90" y2="52" />
-                <circle cx="90" cy="42" r="8" fill="var(--bg-primary)" />
-                <polyline points="90,56 80,68 90,80" />
-                <polyline points="90,56 102,46 95,42" class="water-arm-r" stroke="var(--accent-blue)" />
+            ${hudBackground}
+            
+            <!-- Trail 2 -->
+            <g class="ghost-figure ghost-figure-2">
+                <g class="water-body">
+                    <line x1="90" y1="80" x2="90" y2="52" />
+                    <circle cx="90" cy="42" r="8" fill="var(--bg-primary)" />
+                    <polyline points="90,56 80,68 90,80" />
+                    <polyline points="90,56 102,46 95,42" class="water-arm-r" stroke="var(--accent-blue)" />
+                </g>
             </g>
-            <circle cx="95" cy="35" r="2" class="water-droplet" fill="var(--accent-blue)" stroke="none" />
-            <rect x="135" y="45" width="16" height="24" rx="2" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
-            <rect x="137" y="47" width="12" height="20" rx="1" class="water-fill" fill="var(--accent-blue)" stroke="none" />
+
+            <!-- Trail 1 -->
+            <g class="ghost-figure ghost-figure-1">
+                <g class="water-body">
+                    <line x1="90" y1="80" x2="90" y2="52" />
+                    <circle cx="90" cy="42" r="8" fill="var(--bg-primary)" />
+                    <polyline points="90,56 80,68 90,80" />
+                    <polyline points="90,56 102,46 95,42" class="water-arm-r" stroke="var(--accent-blue)" />
+                </g>
+            </g>
+
+            <!-- Active -->
+            <g class="active-figure">
+                <g class="water-body">
+                    <line x1="90" y1="80" x2="90" y2="52" />
+                    <circle cx="90" cy="42" r="8" fill="var(--bg-primary)" />
+                    <polyline points="90,56 80,68 90,80" />
+                    <polyline points="90,56 102,46 95,42" class="water-arm-r" stroke="var(--accent-blue)" />
+                </g>
+                <circle cx="95" cy="35" r="2" class="water-droplet" fill="var(--accent-blue)" stroke="none" />
+                <rect x="135" y="45" width="16" height="24" rx="2" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+                <rect x="137" y="47" width="12" height="20" rx="1" class="water-fill" fill="var(--accent-blue)" stroke="none" />
+            </g>
         </svg>`;
     } else {
         return `
         <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+            ${hudBackground}
             <line x1="20" y1="85" x2="180" y2="85" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
-            <g class="pushup-body-group">
-                <line x1="40" y1="80" x2="80" y2="72" />
-                <line x1="80" y1="72" x2="130" y2="60" />
-                <circle cx="142" cy="56" r="8" fill="var(--bg-primary)" />
-                <polyline points="120,62 105,73 120,85" class="pushup-arm" stroke="var(--accent-blue)" />
+            <g class="active-figure">
+                <g class="pushup-body-group">
+                    <line x1="40" y1="80" x2="80" y2="72" />
+                    <line x1="80" y1="72" x2="130" y2="60" />
+                    <circle cx="142" cy="56" r="8" fill="var(--bg-primary)" />
+                    <polyline points="120,62 105,73 120,85" class="pushup-arm" stroke="var(--accent-blue)" />
+                </g>
             </g>
         </svg>`;
     }
@@ -1394,7 +1549,7 @@ function renderMissions() {
                 <div class="w-full max-w-[200px] h-[100px] flex items-center justify-center bg-black/20 border border-primary/20 rounded-lg overflow-hidden relative">
                     ${getWebStickFigureAnimation(m.id)}
                 </div>
-                <span class="font-technical text-[9px] text-text-secondary uppercase tracking-widest">Procedural Movement Simulation</span>
+                <span class="font-technical text-[9px] text-text-secondary uppercase tracking-widest">VEO-3 NEURAL KINETIC RESOLVER v3.2</span>
             </div>
         `;
         
