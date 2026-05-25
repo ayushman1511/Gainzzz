@@ -1,34 +1,117 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Anime Fitness Evolution UI</title>
+    <title>Abyssal Protocol - Neural Sync UI</title>
     <!-- Stylesheet -->
     <link rel="stylesheet" href="styles.css"/>
-    <!-- Material Symbols for premium futuristic icons -->
+    <!-- Material Symbols for premium icons -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <!-- Tailwind CSS with forgiving parsing -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "var(--primary-container)",
+                        "primary": "var(--primary)",
+                        "background": "var(--bg-primary)",
+                        "on-surface": "var(--text-primary)",
+                        "on-surface-variant": "var(--text-secondary)",
+                        "surface": "var(--bg-secondary)",
+                        "surface-container": "var(--bg-tertiary)",
+                        "surface-dim": "var(--bg-primary)",
+                        "error": "var(--accent-red)",
+                        "inverse-surface": "var(--text-primary)"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Anton"],
+                        "headline-lg": ["Anton"],
+                        "title-md": ["Geist"],
+                        "label-sm": ["Geist"],
+                        "body-md": ["Geist"],
+                        "display-lg": ["Anton"],
+                        "body-lg": ["Geist"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: max(812px, 100dvh);
+            transition: background-color 0.4s, color 0.4s;
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.8s ease-in-out;
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+        }
+
+        .text-custom {
+            color: var(--primary);
+        }
+        
+        /* Ensure specific glassmorphism styling overlays from designer */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+    </style>
 </head>
-<body class="selection:bg-accent-glow selection:text-bg-primary">
+<body class="antialiased overflow-x-hidden pt-16 pb-24 flex flex-col min-h-screen">
 
     <!-- Interactive HTML5 Canvas Floating Aura Background -->
     <canvas id="aura-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
 
-    <!-- SCREEN 1: SPLASH SCREEN -->
-    <section id="screen-splash" class="screen-container active justify-between items-center p-8 text-center relative z-10">
+    <!-- Top AppBar (Sticky across stages) -->
+    <header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-on-surface/10 flex items-center justify-between px-6 h-16 max-w-container-max mx-auto shadow-sm">
+        <div class="flex items-center gap-4">
+            <div class="w-8 h-8 rounded-full overflow-hidden border border-on-surface/20 shrink-0">
+                <img id="bar-avatar" class="w-full h-full object-cover filter contrast-125 grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCR3lfKDV9lCBxKdan6y0IGeomFCEKrIep0mrvCW3aTWRT50pcDNHFXdk0vGf1miWAbYeFYsaZHevYQUYnOBKezRHM0cy3foCIpM_FY9UD_zy3ZDZTIjFd7R71AVFO10SxmToL-GtJWYk6M-NtuVOshP5BAI3CxQa9IARahfJmNn55CUC3Te5erFGt6_Dq-Pla2iPowy1vsiUEqZ3oB1DvCpaE-G13PJkVkK0ReSspr2DOKNj_gtYehFHH2a6NvUxvzHNgskwu0P0IN"/>
+            </div>
+            <h1 class="font-headline-lg-mobile text-[16px] text-custom tracking-[0.2em] uppercase truncate pt-1">
+                ABYSSAL PROTOCOL
+            </h1>
+        </div>
+        <button aria-label="Settings" class="text-on-surface hover:text-custom transition-colors duration-300 active:scale-95 transition-transform flex items-center justify-center p-2" onclick="switchMobileScreen('screen-stats')">
+            <span class="material-symbols-outlined">settings</span>
+        </button>
+    </header>
+
+    <!-- SCREEN 1: SPLASH SCREEN (HUD Start) -->
+    <section id="screen-splash" class="screen-container active justify-between items-center p-8 text-center relative z-10 flex-grow">
         <div></div>
         <div class="space-y-6 flex flex-col items-center">
             <!-- Animated Aura Logo -->
-            <div class="relative w-44 h-44 flex items-center justify-center glass-card rounded-full border-2 border-accent-glow shadow-[0_0_20px_rgba(var(--accent-glow-rgb),0.3)] aura-glow" style="border-radius: 50%;">
+            <div class="relative w-44 h-44 flex items-center justify-center glass-card rounded-full border-2 border-primary/40 shadow-[0_0_20px_rgba(var(--accent-glow-rgb),0.3)] aura-glow" style="border-radius: 50%;">
                 <svg viewBox="0 0 100 100" class="w-28 h-28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Futuristic geometric core -->
-                    <circle cx="50" cy="50" r="30" stroke="var(--accent-glow)" stroke-width="2" stroke-dasharray="8 4"/>
+                    <circle cx="50" cy="50" r="30" stroke="var(--primary)" stroke-width="2" stroke-dasharray="8 4"/>
                     <polygon points="50,15 80,75 20,75" stroke="var(--accent-blue)" stroke-width="2" stroke-linejoin="round"/>
-                    <circle cx="50" cy="50" r="10" fill="var(--accent-glow)"/>
+                    <circle cx="50" cy="50" r="10" fill="var(--primary)"/>
                 </svg>
-                <!-- Glowing Eye Dots -->
-                <div class="absolute w-2 h-2 bg-accent-red rounded-full animate-ping" style="top: 42%; left: 42%; box-shadow: 0 0 10px var(--accent-red)"></div>
-                <div class="absolute w-2 h-2 bg-accent-red rounded-full animate-ping" style="top: 42%; right: 42%; box-shadow: 0 0 10px var(--accent-red)"></div>
+                <div class="absolute w-2 h-2 bg-error rounded-full animate-ping" style="top: 42%; left: 42%; box-shadow: 0 0 10px var(--error)"></div>
+                <div class="absolute w-2 h-2 bg-error rounded-full animate-ping" style="top: 42%; right: 42%; box-shadow: 0 0 10px var(--error)"></div>
             </div>
             
             <h1 class="font-display text-4xl tracking-[0.25em] uppercase text-text-primary mt-4 glitch-text" data-text="NEURAL SYNC">
@@ -51,22 +134,20 @@
     </section>
 
     <!-- SCREEN 2: ONBOARDING QUESTIONS -->
-    <section id="screen-onboarding" class="screen-container justify-between p-6 relative z-10">
+    <section id="screen-onboarding" class="screen-container justify-between p-6 relative z-10 flex-grow">
         <!-- Progress Bar Header -->
         <div class="w-full flex items-center justify-between gap-3 mb-4">
             <span class="font-technical text-xs text-text-secondary uppercase">Sync Setup</span>
-            <div class="flex-1 h-1.5 bg-bg-tertiary rounded-full overflow-hidden border border-glass-border">
-                <div id="onboarding-progress" class="h-full bg-accent-glow" style="width: 14%;"></div>
+            <div class="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden border border-glass-border">
+                <div id="onboarding-progress" class="h-full bg-primary" style="width: 14%;"></div>
             </div>
-            <span id="onboarding-step-num" class="font-technical text-xs text-accent-glow">1/7</span>
+            <span id="onboarding-step-num" class="font-technical text-xs text-custom">1/7</span>
         </div>
 
-        <!-- Question Cards Wrapper -->
         <div class="flex-1 flex items-center justify-center" id="onboarding-cards-container">
-            
             <!-- Step 1: Fitness Level -->
             <div class="onboarding-step-card space-y-4 w-full" data-step="1">
-                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary">Current Fitness Tier</h2>
+                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary text-custom">Current Fitness Tier</h2>
                 <p class="text-xs text-text-secondary mb-4">Be brutally honest. The system adapts mission scale to your core strength.</p>
                 <div class="space-y-3">
                     <label class="glass-card interactive flex items-center gap-4 p-4 cursor-pointer" style="border-radius: var(--radius-md)">
@@ -96,9 +177,9 @@
                 </div>
             </div>
 
-            <!-- Step 2: Body Goals (Modified dynamically in JS) -->
+            <!-- Step 2: Body Goals -->
             <div class="onboarding-step-card space-y-4 w-full hidden" data-step="2">
-                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary">Target Ascension Goal</h2>
+                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary text-custom">Target Ascension Goal</h2>
                 <p class="text-xs text-text-secondary mb-4">What form are you training to unlock?</p>
                 <div class="space-y-3">
                     <label class="glass-card interactive flex items-center gap-4 p-4 cursor-pointer" style="border-radius: var(--radius-md)">
@@ -128,9 +209,9 @@
                 </div>
             </div>
 
-            <!-- Step 3: Workout Experience -->
+            <!-- Step 3: Experience -->
             <div class="onboarding-step-card space-y-4 w-full hidden" data-step="3">
-                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary">Discipline Level</h2>
+                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary text-custom">Discipline Level</h2>
                 <p class="text-xs text-text-secondary mb-4">How long have you been walking this path?</p>
                 <div class="space-y-3">
                     <label class="glass-card interactive flex items-center gap-4 p-4 cursor-pointer" style="border-radius: var(--radius-md)">
@@ -154,11 +235,10 @@
 
             <!-- Step 4: Favorite Anime -->
             <div class="onboarding-step-card space-y-4 w-full hidden" data-step="4">
-                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary">Favorite Anime Universe</h2>
+                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary text-custom">Favorite Anime Universe</h2>
                 <p class="text-xs text-text-secondary mb-4">Select the core universe that fuels your fighting spirit.</p>
                 <div class="space-y-3">
                     <input type="text" id="input-fav-anime" class="input-cyber font-technical text-sm uppercase" placeholder="e.g. Solo Leveling, Blue Lock, DBZ" value="Solo Leveling"/>
-                    
                     <div class="grid grid-cols-2 gap-2 mt-4">
                         <button type="button" class="btn-cyber text-[10px] p-2" onclick="setAnimePreset('Solo Leveling')">Solo Leveling</button>
                         <button type="button" class="btn-cyber text-[10px] p-2" onclick="setAnimePreset('Blue Lock')">Blue Lock</button>
@@ -170,11 +250,10 @@
 
             <!-- Step 5: Favorite Character -->
             <div class="onboarding-step-card space-y-4 w-full hidden" data-step="5">
-                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary">Anime Protagonist Persona</h2>
+                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary text-custom">Anime Protagonist Persona</h2>
                 <p class="text-xs text-text-secondary mb-4">Whose archetype and mindset aligns with your drive?</p>
                 <div class="space-y-3">
                     <input type="text" id="input-fav-character" class="input-cyber font-technical text-sm uppercase" placeholder="e.g. Sung Jin-Woo, Goku, Levi, Isagi" value="Sung Jin-Woo"/>
-                    
                     <div class="grid grid-cols-2 gap-2 mt-4">
                         <button type="button" class="btn-cyber text-[10px] p-2" onclick="setCharacterPreset('Sung Jin-Woo')">Jin-Woo</button>
                         <button type="button" class="btn-cyber text-[10px] p-2" onclick="setCharacterPreset('Goku')">Goku</button>
@@ -184,9 +263,9 @@
                 </div>
             </div>
 
-            <!-- Step 6: Preferred Fighting Style/Personality -->
+            <!-- Step 6: Preferred Style -->
             <div class="onboarding-step-card space-y-4 w-full hidden" data-step="6">
-                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary">Combat Specialty</h2>
+                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary text-custom">Combat Specialty</h2>
                 <p class="text-xs text-text-secondary mb-4">How do you dominate the battle arena?</p>
                 <div class="space-y-3">
                     <label class="glass-card interactive flex items-center gap-4 p-4 cursor-pointer" style="border-radius: var(--radius-md)">
@@ -210,15 +289,15 @@
                         <span class="material-symbols-outlined text-text-muted">psychology</span>
                         <div class="text-left">
                             <h3 class="font-technical text-sm font-bold uppercase text-text-primary">Metavision Tactician (Stamina)</h3>
-                            <p class="text-[10px] text-text-secondary">Extreme mental focus, endless cardio, hyper-stamina pacing.</p>
+                            <p class="text-[10px] text-text-secondary">Extreme focus, endless cardio, hyper-stamina pacing.</p>
                         </div>
                     </label>
                 </div>
             </div>
 
-            <!-- Step 7: Motivation Style -->
+            <!-- Step 7: Motivation -->
             <div class="onboarding-step-card space-y-4 w-full hidden" data-step="7">
-                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary">Motivational Fuel</h2>
+                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary text-custom">Motivational Fuel</h2>
                 <p class="text-xs text-text-secondary mb-4">What words trigger your limit break?</p>
                 <div class="space-y-3">
                     <label class="glass-card interactive flex items-center gap-4 p-4 cursor-pointer" style="border-radius: var(--radius-md)">
@@ -239,7 +318,6 @@
                     </label>
                 </div>
             </div>
-
         </div>
 
         <!-- Navigation Buttons -->
@@ -256,27 +334,23 @@
     </section>
 
     <!-- SCREEN 3: CHARACTER ASSIGNMENT REVEAL -->
-    <section id="screen-assignment" class="screen-container justify-between p-6 text-center relative z-10">
+    <section id="screen-assignment" class="screen-container justify-between p-6 text-center relative z-10 flex-grow">
         <div></div>
-        
-        <!-- The Dramatic Reveal Zone -->
         <div class="space-y-6 flex flex-col items-center">
-            <!-- Rank Hexagon Emblem -->
+            <!-- Rank Emblem -->
             <div class="relative w-36 h-36 flex items-center justify-center animate-bounce">
-                <!-- Outer glowing spinning ring -->
-                <div class="absolute inset-0 border-2 border-dashed border-accent-glow rounded-full animate-[spin_8s_linear_infinite]"></div>
-                <!-- Inner crystal glass solid -->
+                <div class="absolute inset-0 border-2 border-dashed border-primary rounded-full animate-[spin_8s_linear_infinite]"></div>
                 <div class="absolute inset-2 glass-card flex items-center justify-center" style="border-radius: 50%;">
-                    <span id="assignment-rank-badge" class="font-display text-6xl text-accent-glow" style="text-shadow: 0 0 15px var(--accent-glow)">S</span>
+                    <span id="assignment-rank-badge" class="font-display text-6xl text-custom" style="text-shadow: 0 0 15px var(--primary)">S</span>
                 </div>
             </div>
             
             <div class="space-y-2">
                 <span class="font-technical text-xs tracking-[0.3em] text-accent-blue uppercase">Archetype Decoded</span>
                 <h2 id="assignment-class-title" class="font-display text-4xl text-text-primary tracking-wide uppercase">SHADOW MONARCH</h2>
-                <div class="inline-flex items-center gap-2 border border-accent-glow px-4 py-1" style="border-radius: var(--radius-sm)">
-                    <span class="w-1.5 h-1.5 bg-accent-glow rounded-full animate-ping"></span>
-                    <span id="assignment-rank-text" class="font-technical text-[10px] text-accent-glow tracking-widest uppercase">RANK-S ADAPTIVE HUNTER</span>
+                <div class="inline-flex items-center gap-2 border border-primary px-4 py-1" style="border-radius: var(--radius-sm)">
+                    <span class="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></span>
+                    <span id="assignment-rank-text" class="font-technical text-[10px] text-custom tracking-widest uppercase">RANK-S ADAPTIVE HUNTER</span>
                 </div>
             </div>
             
@@ -293,286 +367,282 @@
         </div>
     </section>
 
-    <!-- SCREEN 4: HOME DASHBOARD -->
-    <section id="screen-dashboard" class="screen-container justify-between p-4 pb-20 relative z-10 overflow-y-auto">
-        <!-- Dashboard Top Bar -->
-        <header class="flex items-center justify-between mb-4 border-b border-glass-border pb-3">
-            <div class="flex items-center gap-3">
-                <div class="relative w-10 h-10 rounded-full overflow-hidden border-2 border-accent-glow">
-                    <img id="dash-avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQzZBzO5ElLPh1Z1dwji2X-DTm-FDvImVVkw4bYIy9VpljKt1EEk6J1UB5N996ldL9VHyQ_KJ7eayh6BmNsfHYl1TtYeIihbuf9BVxqF16o172QpwhISHhvt9ay4TE3KjOxhpdfaA79FTwjIcY5JMbur_yqwDbn1jNwJYq7WXKdtK15wjqivZ454H5ffum-bdhrW-OtkHAWcv-v8Cc5r_Im8-_6EVCQmIBYOIuSestDkQXBV4jVmlXJk_FGpy2mcjUA7H5sY4ZPc_U" class="w-full h-full object-cover filter contrast-125 grayscale" alt="Protagonist Avatar"/>
-                </div>
-                <div>
-                    <h3 class="font-display text-md text-text-primary tracking-wider uppercase leading-none">PROTAGONIST</h3>
-                    <span id="dash-class-badge" class="font-technical text-[9px] text-accent-glow tracking-widest uppercase">SHADOW MONARCH</span>
+    <!-- SCREEN 4: HOME DASHBOARD (Exact layout blueprint from home_dashboard_floating_glass) -->
+    <section id="screen-dashboard" class="screen-container p-6 relative z-10 overflow-y-auto flex-grow gap-6">
+        <!-- Identity Sync Area -->
+        <div class="flex flex-col items-center justify-center pt-2">
+            <div class="relative w-40 h-40 mb-4">
+                <!-- Sync Ring -->
+                <svg class="absolute inset-0 w-full h-full progress-ring" viewBox="0 0 160 160">
+                    <circle cx="80" cy="80" fill="none" r="70" stroke="rgba(255,255,255,0.08)" stroke-width="4"></circle>
+                    <circle class="progress-ring-circle" id="dashboard-sync-circle" cx="80" cy="80" fill="none" r="70" stroke="var(--primary)" stroke-linecap="butt" stroke-width="6" style="stroke-dashoffset: 110;"></circle>
+                </svg>
+                <!-- Central Avatar -->
+                <div class="absolute inset-2 rounded-full overflow-hidden border-2 border-primary-container">
+                    <img id="dash-avatar" alt="Pilot Avatar" class="w-full h-full object-cover grayscale contrast-125" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQzZBzO5ElLPh1Z1dwji2X-DTm-FDvImVVkw4bYIy9VpljKt1EEk6J1UB5N996ldL9VHyQ_KJ7eayh6BmNsfHYl1TtYeIihbuf9BVxqF16o172QpwhISHhvt9ay4TE3KjOxhpdfaA79FTwjIcY5JMbur_yqwDbn1jNwJYq7WXKdtK15wjqivZ454H5ffum-bdhrW-OtkHAWcv-v8Cc5r_Im8-_6EVCQmIBYOIuSestDkQXBV4jVmlXJk_FGpy2mcjUA7H5sY4ZPc_U"/>
                 </div>
             </div>
             
-            <div class="glass-card flex items-center gap-1.5 px-3 py-1.5" style="border-radius: var(--radius-full)">
-                <span class="font-display text-sm text-accent-glow" id="dash-level">Lvl 1</span>
-                <span class="font-technical text-[9px] text-text-secondary uppercase" id="dash-rank-badge">[S-Rank]</span>
-            </div>
-        </header>
-
-        <!-- Quote Area -->
-        <div class="glass-card p-4 border-l-2 border-l-accent-glow mb-4" style="border-radius: var(--radius-md)">
-            <p id="dash-quote" class="font-technical text-xs italic text-text-secondary">"Wake up. If you stay idle, the shadows will conquer. Your training begins now."</p>
-            <div class="text-right mt-1.5">
-                <span id="dash-quote-author" class="font-technical text-[9px] text-accent-glow tracking-wider uppercase">— Sung Jin-Woo</span>
-            </div>
-        </div>
-
-        <!-- Sync Core Image Area -->
-        <div class="relative w-full h-48 glass-card flex items-center justify-center p-3 mb-4">
-            <!-- Glow background overlay -->
-            <div class="absolute inset-0 opacity-15 filter blur-xl" style="background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);"></div>
-            <!-- Dynamic character floating asset -->
-            <div class="relative z-10 w-full h-full rounded-lg overflow-hidden flex items-center justify-center">
-                <img id="dash-character-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQzZBzO5ElLPh1Z1dwji2X-DTm-FDvImVVkw4bYIy9VpljKt1EEk6J1UB5N996ldL9VHyQ_KJ7eayh6BmNsfHYl1TtYeIihbuf9BVxqF16o172QpwhISHhvt9ay4TE3KjOxhpdfaA79FTwjIcY5JMbur_yqwDbn1jNwJYq7WXKdtK15wjqivZ454H5ffum-bdhrW-OtkHAWcv-v8Cc5r_Im8-_6EVCQmIBYOIuSestDkQXBV4jVmlXJk_FGpy2mcjUA7H5sY4ZPc_U" class="h-full object-contain filter contrast-125 saturate-50 drop-shadow-[0_0_15px_var(--accent-glow)] animate-[pulse_2.5s_infinite_alternate]" alt="Character Progression Stage"/>
-            </div>
-            
-            <!-- XP Overlay -->
-            <div class="absolute bottom-3 left-3 right-3 z-20 space-y-1 bg-black/60 backdrop-blur-md p-2 rounded-lg border border-glass-border">
-                <div class="flex items-center justify-between text-[10px] font-technical">
-                    <span class="text-text-secondary uppercase">Sync XP Curve</span>
-                    <span class="text-accent-glow" id="dash-xp-text">0 / 1000 XP</span>
-                </div>
-                <div class="xp-bar-container">
-                    <div class="xp-bar-fill" id="dash-xp-fill" style="width: 0%"></div>
+            <div class="text-center space-y-1">
+                <h2 id="dash-class-badge" class="font-headline-lg text-2xl uppercase text-on-surface">SHADOW MONARCH</h2>
+                <div class="inline-flex items-center gap-2 border border-on-surface px-4 py-0.5">
+                    <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                    <span id="dash-sync-text" class="font-label-sm text-[10px] text-custom tracking-widest uppercase">75% SYNC DETECTED</span>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Telemetry Grid (Stamina, Streak, Water) -->
-        <div class="grid grid-cols-3 gap-3 mb-4">
-            <div class="glass-card p-3 text-center flex flex-col justify-between h-20" style="border-radius: var(--radius-md)">
-                <span class="font-technical text-[9px] text-text-secondary uppercase">Cal Burned</span>
-                <div class="flex items-baseline justify-center gap-0.5">
-                    <span id="dash-calories" class="font-display text-lg text-text-primary">0</span>
-                    <span class="font-technical text-[8px] text-text-muted">KCAL</span>
+        <!-- Level up card detailing XP -->
+        <div class="glass-card p-4 space-y-1">
+            <div class="flex items-center justify-between text-[10px] font-technical">
+                <span class="text-text-secondary uppercase" id="dash-level">Level Scale: Lvl 1</span>
+                <span class="text-custom" id="dash-xp-text">750 / 1000 XP</span>
+            </div>
+            <div class="xp-bar-container">
+                <div class="xp-bar-fill" id="dash-xp-fill" style="width: 75%;"></div>
+            </div>
+        </div>
+
+        <!-- Stats Bento Grid (Calories and streak, etc.) -->
+        <div class="grid grid-cols-2 gap-4">
+            <!-- Energy Expended (Calories) -->
+            <div class="glass-card p-5 flex flex-col justify-between h-28 text-left">
+                <div class="flex items-center justify-between w-full">
+                    <span class="font-label-sm text-[10px] text-on-surface-variant uppercase">Energy Expended</span>
+                    <span class="material-symbols-outlined text-custom text-sm">local_fire_department</span>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span id="dash-calories" class="font-headline-lg text-2xl text-on-surface">2,450</span>
+                    <span class="font-label-sm text-[8px] text-on-surface-variant">KCAL</span>
                 </div>
             </div>
-            <div class="glass-card p-3 text-center flex flex-col justify-between h-20" style="border-radius: var(--radius-md)">
-                <span class="font-technical text-[9px] text-text-secondary uppercase">Hydration</span>
-                <div class="flex items-baseline justify-center gap-0.5">
-                    <span id="dash-water" class="font-display text-lg text-accent-blue">0.0</span>
-                    <span class="font-technical text-[8px] text-text-muted">/ 2L</span>
+            <!-- Consecutive Days (Streak) -->
+            <div class="glass-card p-5 flex flex-col justify-between h-28 text-left">
+                <div class="flex items-center justify-between w-full">
+                    <span class="font-label-sm text-[10px] text-on-surface-variant uppercase">Active Streak</span>
+                    <span class="material-symbols-outlined text-on-surface text-sm">bolt</span>
                 </div>
-            </div>
-            <div class="glass-card p-3 text-center flex flex-col justify-between h-20" style="border-radius: var(--radius-md)">
-                <span class="font-technical text-[9px] text-text-secondary uppercase">Active Streak</span>
-                <div class="flex items-baseline justify-center gap-0.5">
-                    <span id="dash-streak" class="font-display text-lg text-accent-green">1</span>
-                    <span class="font-technical text-[8px] text-text-muted">DAYS</span>
+                <div class="flex items-baseline gap-1">
+                    <span id="dash-streak" class="font-headline-lg text-2xl text-on-surface">12</span>
+                    <span class="font-label-sm text-[8px] text-on-surface-variant">DAY STREAK</span>
                 </div>
             </div>
         </div>
 
-        <!-- Daily Mission Short Preview -->
-        <div class="space-y-2">
-            <div class="flex items-center justify-between">
-                <span class="font-technical text-xs font-bold uppercase text-text-primary">Today's Core Directives</span>
-                <button class="font-technical text-[10px] text-accent-glow uppercase hover:underline" onclick="switchMobileScreen('screen-missions')">All Missions</button>
+        <!-- Active Directive Runner Card with Glass Background image overlay -->
+        <div class="relative overflow-hidden glass-card h-44 flex flex-col justify-between p-5 text-left">
+            <div class="absolute inset-0 z-0">
+                <img alt="Urban Run background" class="w-full h-full object-cover opacity-20 grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfSFsFFlFKQbtpmzQyJUpHxhm2eEFQUViXdcUTuFMYj31L_M1ECNREH_6q25Tl81LcXhLrZzO46q_kE_QFxg6nxMyRYVn31L_S2VsazAYts504mITc_g0Voj15SQouG0gIOflp1d4cpBkj5fN05OGWaB4cAiPwFo75jXU-VI5Ygmd_-6FL19dyouxtDCyoKL-_xYgH6CB32LwTaVxdhyCUdn4XHMah03W1M3PIP88a5u7NwhT6IiwNew8bZfn4Fdvn1oOjUoDDwVUD"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent"></div>
             </div>
             
-            <div id="dash-mission-list" class="space-y-2">
-                <!-- Rendered dynamically -->
+            <div class="relative z-10 space-y-1">
+                <div class="border border-on-surface px-2.5 py-0.5 inline-block bg-background/50">
+                    <span class="font-label-sm text-[8px] text-on-surface uppercase tracking-widest">Active Directive</span>
+                </div>
+                <h3 id="dash-mission-preview-title" class="font-headline-lg text-md text-custom uppercase mt-1 leading-none">10KM ABYSSAL RUN</h3>
+                <p id="dash-mission-preview-desc" class="font-body-md text-[11px] text-on-surface-variant max-w-[280px]">Sector 7 sync. Pace limits engaged. Initiate cycle to unlock evolved status.</p>
+            </div>
+            
+            <div class="relative z-10 flex justify-between items-center mt-2">
+                <p id="dash-quote" class="font-body-md text-[9px] italic text-text-secondary max-w-[180px] truncate">"If you stay idle, shadows conquer."</p>
+                <button class="bg-primary text-on-primary font-label-sm text-[9px] uppercase tracking-wider py-2 px-4 rounded hover:bg-opacity-90 transition-colors" onclick="switchMobileScreen('screen-missions')">
+                    <span>GO TO DIRECTIVES</span>
+                </button>
             </div>
         </div>
     </section>
 
-    <!-- SCREEN 5: MISSIONS SCREEN -->
-    <section id="screen-missions" class="screen-container justify-between p-4 pb-20 relative z-10 overflow-y-auto">
-        <header class="flex items-center justify-between mb-4 border-b border-glass-border pb-3">
-            <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary">DIRECTIVES</h2>
-            <div class="glass-card px-3 py-1 font-technical text-[10px] text-accent-glow uppercase" style="border-radius: var(--radius-full)" id="missions-rank-tag">
-                S-Rank Missions
-            </div>
+    <!-- SCREEN 5: DAILY MISSION SCREEN (Exact layout blueprint from daily_missions_floating_glass) -->
+    <section id="screen-missions" class="screen-container p-6 relative z-10 overflow-y-auto flex-grow gap-6">
+        <header class="border-l-4 border-primary-container pl-4 text-left">
+            <h1 class="font-display-lg text-4xl text-custom uppercase tracking-tight">Daily<br/>Missions</h1>
+            <p class="font-body-lg text-xs text-on-surface-variant mt-1.5 max-w-xs">Execute standard protocols to maintain system integrity.</p>
         </header>
 
-        <!-- Mission Cards list container -->
-        <div id="missions-card-list" class="space-y-3 flex-1">
-            <!-- Card templates rendered in JavaScript based on user fitness Rank -->
+        <!-- Directives List -->
+        <div id="missions-card-list" class="space-y-4 flex-1 text-left">
+            <!-- Loaded dynamically in JS with standard glass-card modules -->
         </div>
     </section>
 
-    <!-- SCREEN 6: CHARACTER EVOLUTION SCREEN -->
-    <section id="screen-evolution" class="screen-container justify-between p-4 pb-20 relative z-10 text-center overflow-y-auto">
-        <header class="mb-4">
-            <span class="font-technical text-xs tracking-[0.2em] text-accent-red uppercase">Evolution Protocol</span>
-            <h2 class="font-display text-3xl text-text-primary uppercase glitch-text" data-text="LIMIT BREAK">LIMIT BREAK</h2>
-        </header>
+    <!-- SCREEN 6: CHARACTER EVOLUTION SCREEN (Exact layout blueprint from evolution_cinematic_floating_glass) -->
+    <section id="screen-evolution" class="screen-container p-6 relative z-10 text-center overflow-y-auto flex-grow justify-between">
+        <!-- Header -->
+        <div class="text-center relative z-20">
+            <h1 class="font-display-lg text-3xl text-custom uppercase glitch-text leading-none" id="evo-glitch-title" data-text="LIMIT BREAK REACHED">
+                LIMIT BREAK REACHED
+            </h1>
+            <p class="font-title-md text-xs text-on-surface-variant uppercase mt-1 tracking-widest">Evolution Protocol Engaged</p>
+        </div>
 
-        <!-- Comparison Card Frame -->
-        <div class="flex-1 flex flex-col items-center justify-center py-4 relative">
-            <div class="absolute inset-0 opacity-15 filter blur-2xl" style="background: radial-gradient(circle, var(--accent-red) 0%, transparent 60%);"></div>
-            
-            <!-- Character frame showing progression -->
-            <div class="relative w-56 h-72 glass-card border-2 border-accent-red/40 flex flex-col justify-between p-4 rounded-2xl animate-[pulse_2s_infinite]">
-                <div class="flex items-center justify-between">
-                    <span id="evo-stage-badge" class="font-technical text-[10px] bg-accent-red text-text-primary px-2.5 py-0.5 rounded-full uppercase font-bold">Lvl 1 (Base)</span>
-                    <span class="material-symbols-outlined text-accent-red text-sm animate-spin" style="font-variation-settings: 'FILL' 0">settings_sync</span>
-                </div>
+        <!-- Central Transformation Sphere -->
+        <div class="flex items-center justify-center py-4">
+            <div class="relative w-56 h-56 flex items-center justify-center glass-card rounded-[2.5rem] p-3 shadow-lg">
+                <!-- Aura Rings -->
+                <div class="absolute inset-0 rounded-[2.5rem] border border-primary/30 aura-pulse"></div>
+                <div class="absolute inset-3 rounded-[2rem] border border-primary/50 animate-[spin_10s_linear_infinite]"></div>
+                <div class="absolute inset-6 rounded-[1.5rem] border border-primary/80 border-dashed animate-[spin_15s_linear_infinite_reverse]"></div>
+                <!-- Character Avatar Image -->
+                <img id="evo-character-img" alt="Cinematic Hero" class="w-full h-full object-cover rounded-3xl filter contrast-125 saturate-50 border-2 border-primary/20 z-10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQzZBzO5ElLPh1Z1dwji2X-DTm-FDvImVVkw4bYIy9VpljKt1EEk6J1UB5N996ldL9VHyQ_KJ7eayh6BmNsfHYl1TtYeIihbuf9BVxqF16o172QpwhISHhvt9ay4TE3KjOxhpdfaA79FTwjIcY5JMbur_yqwDbn1jNwJYq7WXKdtK15wjqivZ454H5ffum-bdhrW-OtkHAWcv-v8Cc5r_Im8-_6EVCQmIBYOIuSestDkQXBV4jVmlXJk_FGpy2mcjUA7H5sY4ZPc_U"/>
                 
-                <!-- Center Avatar image overlay -->
-                <div class="relative w-full h-44 my-2 flex items-center justify-center overflow-hidden rounded-xl bg-black/30 border border-glass-border">
-                    <img id="evo-character-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQzZBzO5ElLPh1Z1dwji2X-DTm-FDvImVVkw4bYIy9VpljKt1EEk6J1UB5N996ldL9VHyQ_KJ7eayh6BmNsfHYl1TtYeIihbuf9BVxqF16o172QpwhISHhvt9ay4TE3KjOxhpdfaA79FTwjIcY5JMbur_yqwDbn1jNwJYq7WXKdtK15wjqivZ454H5ffum-bdhrW-OtkHAWcv-v8Cc5r_Im8-_6EVCQmIBYOIuSestDkQXBV4jVmlXJk_FGpy2mcjUA7H5sY4ZPc_U" class="h-full object-contain filter contrast-125 saturate-50" alt="Evolutive Hero Silhouette"/>
+                <!-- Floating Stat Tags -->
+                <div class="absolute -top-3 -left-4 glass-card rounded-xl px-3 py-1 flex items-center gap-1 transform -rotate-6">
+                    <span class="font-label-sm text-[8px] uppercase text-on-surface">STR</span>
+                    <span class="font-headline-lg-mobile text-[14px] text-custom" id="evo-str-boost">+0</span>
                 </div>
-
-                <div class="text-left space-y-1">
-                    <h3 id="evo-class-title" class="font-display text-md text-text-primary uppercase leading-none">SHADOW MONARCH</h3>
-                    <p id="evo-stage-next" class="text-[9px] text-text-secondary font-technical uppercase">Next Stage: Lvl 10 Evolved Shadow Sovereignty</p>
+                <div class="absolute bottom-6 -right-6 glass-card rounded-xl px-3 py-1 flex items-center gap-1 transform rotate-3">
+                    <span class="font-label-sm text-[8px] uppercase text-on-surface">STM</span>
+                    <span class="font-headline-lg-mobile text-[14px] text-custom" id="evo-stm-boost">+0</span>
                 </div>
-            </div>
-            
-            <!-- Dynamic stat additions showing level-up parameters -->
-            <div class="flex items-center gap-2 mt-4 flex-wrap justify-center">
-                <div class="glass-card px-3 py-1 flex items-center gap-1.5" style="border-radius: var(--radius-md)">
-                    <span class="font-technical text-[9px] text-text-secondary uppercase">STR</span>
-                    <span class="font-technical text-xs font-bold text-accent-red" id="evo-str-boost">+0</span>
-                </div>
-                <div class="glass-card px-3 py-1 flex items-center gap-1.5" style="border-radius: var(--radius-md)">
-                    <span class="font-technical text-[9px] text-text-secondary uppercase">AGI</span>
-                    <span class="font-technical text-xs font-bold text-accent-blue" id="evo-agi-boost">+0</span>
-                </div>
-                <div class="glass-card px-3 py-1 flex items-center gap-1.5" style="border-radius: var(--radius-md)">
-                    <span class="font-technical text-[9px] text-text-secondary uppercase">STM</span>
-                    <span class="font-technical text-xs font-bold text-accent-green" id="evo-stm-boost">+0</span>
-                </div>
-                <div class="glass-card px-3 py-1 flex items-center gap-1.5" style="border-radius: var(--radius-md)">
-                    <span class="font-technical text-[9px] text-text-secondary uppercase">INT</span>
-                    <span class="font-technical text-xs font-bold text-accent-purple" id="evo-int-boost">+0</span>
+                <div class="absolute -bottom-3 left-2 glass-card rounded-xl px-3 py-1 flex items-center gap-1 transform -rotate-2">
+                    <span class="font-label-sm text-[8px] uppercase text-on-surface">AGI</span>
+                    <span class="font-headline-lg-mobile text-[14px] text-custom" id="evo-agi-boost">+0</span>
                 </div>
             </div>
         </div>
-
-        <div class="w-full space-y-2 mt-4">
-            <button id="btn-trigger-evolution" class="btn-cyber primary w-full corner-cut flex items-center justify-center gap-2" style="background: var(--accent-red); border-color: var(--accent-red);">
-                <span>OVERLOAD ASCENSION</span>
-                <span class="material-symbols-outlined animate-ping">power</span>
-            </button>
-            <p class="font-technical text-[9px] text-text-secondary uppercase">Requires Level 10 or 1000 Total XP</p>
-        </div>
-    </section>
-
-    <!-- SCREEN 7: STATS & ANALYTICS SCREEN -->
-    <section id="screen-stats" class="screen-container justify-between p-4 pb-20 relative z-10 overflow-y-auto">
-        <header class="flex items-center justify-between mb-4 border-b border-glass-border pb-3">
-            <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary">TELEMETRY</h2>
-            <span class="font-technical text-[10px] text-text-secondary uppercase">Sync Status: Stable</span>
-        </header>
 
         <div class="space-y-4">
-            <!-- Active stats values progress bars -->
-            <div class="glass-card p-4 space-y-3">
-                <h3 class="font-technical text-xs font-bold uppercase text-text-primary mb-2">Protagonist Base Stats</h3>
-                <div class="stat-row">
-                    <span class="stat-label">STR</span>
-                    <div class="stat-bar-outer"><div class="stat-bar-inner" id="stat-bar-str" style="--stat-color: var(--accent-red); width: 25%"></div></div>
-                    <span class="stat-val text-accent-red" id="stat-val-str">10</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">AGI</span>
-                    <div class="stat-bar-outer"><div class="stat-bar-inner" id="stat-bar-agi" style="--stat-color: var(--accent-blue); width: 20%"></div></div>
-                    <span class="stat-val text-accent-blue" id="stat-val-agi">8</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">STM</span>
-                    <div class="stat-bar-outer"><div class="stat-bar-inner" id="stat-bar-stm" style="--stat-color: var(--accent-green); width: 30%"></div></div>
-                    <span class="stat-val text-accent-green" id="stat-val-stm">12</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">INT</span>
-                    <div class="stat-bar-outer"><div class="stat-bar-inner" id="stat-bar-int" style="--stat-color: var(--accent-purple); width: 15%"></div></div>
-                    <span class="stat-val text-accent-purple" id="stat-val-int">6</span>
-                </div>
+            <div class="text-center space-y-1">
+                <span class="font-technical text-[9px] uppercase tracking-wider text-text-secondary">ASCENSION THRESHOLD</span>
+                <h3 id="evo-class-title" class="font-headline-lg text-lg uppercase text-on-surface">SHADOW SOVEREIGN</h3>
+                <p id="evo-stage-badge" class="font-technical text-[10px] text-custom uppercase">Current Rank-S Protocol</p>
+                <p id="evo-stage-next" class="font-technical text-[8px] text-text-secondary uppercase">Complete S-Rank tasks to trigger Limit Break</p>
             </div>
-
-            <!-- XP Progression chart (SVG representation) -->
-            <div class="glass-card p-4 space-y-2">
-                <h3 class="font-technical text-xs font-bold uppercase text-text-primary">XP Growth Progression</h3>
-                <div class="relative w-full h-32 flex items-center justify-center p-2 rounded bg-black/20">
-                    <svg viewBox="0 0 300 100" class="w-full h-full stroke-accent-glow fill-none">
-                        <!-- Background Grid Lines -->
-                        <line x1="0" y1="20" x2="300" y2="20" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                        <line x1="0" y1="50" x2="300" y2="50" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                        <line x1="0" y1="80" x2="300" y2="80" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                        <!-- Smooth Trend Line -->
-                        <path d="M 0 90 Q 50 85 100 70 T 200 45 T 300 10" stroke="var(--accent-glow)" stroke-width="2.5" class="animate-[dash_2s_ease-out_forwards]" style="stroke-dasharray: 400; stroke-dashoffset: 0;"/>
-                        <!-- Interactive Nodes -->
-                        <circle cx="100" cy="70" r="3.5" fill="var(--accent-blue)" class="animate-pulse"/>
-                        <circle cx="200" cy="45" r="3.5" fill="var(--accent-green)" class="animate-pulse"/>
-                        <circle cx="300" cy="10" r="5" fill="var(--accent-red)" class="animate-pulse"/>
-                    </svg>
-                </div>
-                <div class="flex items-center justify-between text-[8px] font-technical text-text-secondary uppercase">
-                    <span>Day 1: Level 1</span>
-                    <span>Day 5: Level 3</span>
-                    <span>Today: Level 10</span>
-                </div>
-            </div>
-
-            <!-- Workout Calendar Heatmap -->
-            <div class="glass-card p-4 space-y-2">
-                <h3 class="font-technical text-xs font-bold uppercase text-text-primary">Consistency Matrix (Workout Log)</h3>
-                <div class="heatmap-grid" id="stats-heatmap">
-                    <!-- Loaded dynamically in JS with standard grid calendar values -->
-                </div>
-                <div class="flex items-center justify-between text-[8px] font-technical text-text-secondary uppercase mt-2">
-                    <span>Dormant</span>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 bg-accent-glow/10 border border-glass-border"></span>
-                        <span class="w-1.5 h-1.5 bg-accent-glow/45"></span>
-                        <span class="w-1.5 h-1.5 bg-accent-glow/70"></span>
-                        <span class="w-1.5 h-1.5 bg-accent-glow"></span>
-                    </div>
-                    <span>Evolved Pace</span>
-                </div>
-            </div>
+            
+            <button id="btn-trigger-evolution" class="btn-cyber primary w-full corner-cut flex items-center justify-center gap-2" style="background: var(--primary); border-color: var(--primary);">
+                <span>CONTINUE ASCENSION</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </button>
         </div>
     </section>
 
-    <!-- SCREEN 8: ACHIEVEMENT SYSTEM -->
-    <section id="screen-achievements" class="screen-container justify-between p-4 pb-20 relative z-10 overflow-y-auto">
-        <header class="flex items-center justify-between mb-4 border-b border-glass-border pb-3">
-            <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary">ACHIEVEMENTS</h2>
-            <span class="font-technical text-[10px] text-accent-glow uppercase" id="achieve-unlock-count">0 / 6 Unlocked</span>
+    <!-- SCREEN 7: STATS & PROFILE SCREEN (Exact layout blueprint from profile_stats_floating_glass) -->
+    <section id="screen-stats" class="screen-container p-6 relative z-10 overflow-y-auto flex-grow gap-6">
+        <!-- Identity Title -->
+        <section class="flex flex-col gap-1 text-left">
+            <h2 id="stats-hero-title" class="font-display-lg text-4xl text-on-surface tracking-tighter uppercase leading-none">NEXUS<br/>VIPER</h2>
+            <div class="flex items-center gap-2 mt-1">
+                <span class="inline-block w-2 h-2 bg-primary rounded-none animate-pulse"></span>
+                <span class="font-label-sm text-[9px] text-custom uppercase tracking-widest">Status: Active / Authorized</span>
+            </div>
+        </section>
+
+        <!-- Experience & Sync rates Bento cards -->
+        <section class="grid grid-cols-2 gap-4">
+            <!-- EXP Progress -->
+            <div class="glass-card p-4 flex flex-col gap-2 text-left">
+                <div class="flex justify-between items-end">
+                    <span class="font-label-sm text-[9px] text-on-surface-variant uppercase">Experience</span>
+                    <span class="font-title-md text-xs text-on-surface" id="stats-exp-num">84%</span>
+                </div>
+                <div class="h-1 w-full bg-on-surface/10 relative overflow-hidden">
+                    <div id="stats-exp-bar" class="absolute top-0 left-0 h-full bg-primary" style="width: 84%;"></div>
+                </div>
+            </div>
+            <!-- Sync rate Progress -->
+            <div class="glass-card p-4 flex flex-col gap-2 text-left">
+                <div class="flex justify-between items-end">
+                    <span class="font-label-sm text-[9px] text-on-surface-variant uppercase">Sync Rate</span>
+                    <span class="font-title-md text-xs text-on-surface" id="stats-sync-num">92%</span>
+                </div>
+                <div class="h-1 w-full bg-on-surface/10 relative overflow-hidden">
+                    <div id="stats-sync-bar" class="absolute top-0 left-0 h-full bg-primary" style="width: 92%;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Combat Matrix layout -->
+        <section class="glass-card p-5 relative overflow-hidden flex flex-col gap-3 text-left">
+            <div class="absolute -right-12 -top-12 opacity-5 pointer-events-none">
+                <span class="material-symbols-outlined text-[120px]">radar</span>
+            </div>
+            <h3 class="font-title-md text-sm text-on-surface uppercase border-b border-on-surface/10 pb-1.5 mb-1">Combat Matrix</h3>
+            
+            <div class="space-y-3">
+                <div class="flex items-center gap-4">
+                    <span class="font-label-sm text-[10px] text-on-surface-variant w-8">STR</span>
+                    <div class="flex-grow h-2 bg-on-surface/5 relative overflow-hidden" style="border-radius: var(--radius-full)">
+                        <div id="stats-matrix-str" class="absolute top-0 left-0 h-full bg-on-surface" style="width: 75%;"></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="font-label-sm text-[10px] text-on-surface-variant w-8">AGI</span>
+                    <div class="flex-grow h-2 bg-on-surface/5 relative overflow-hidden" style="border-radius: var(--radius-full)">
+                        <div id="stats-matrix-agi" class="absolute top-0 left-0 h-full bg-primary" style="width: 95%;"></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="font-label-sm text-[10px] text-on-surface-variant w-8">STM</span>
+                    <div class="flex-grow h-2 bg-on-surface/5 relative overflow-hidden" style="border-radius: var(--radius-full)">
+                        <div id="stats-matrix-stm" class="absolute top-0 left-0 h-full bg-on-surface" style="width: 60%;"></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="font-label-sm text-[10px] text-on-surface-variant w-8">INT</span>
+                    <div class="flex-grow h-2 bg-on-surface/5 relative overflow-hidden" style="border-radius: var(--radius-full)">
+                        <div id="stats-matrix-int" class="absolute top-0 left-0 h-full bg-primary" style="width: 88%;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Consistency Heatmap in Telemetry -->
+        <section class="glass-card p-4 space-y-2 text-left">
+            <h3 class="font-title-md text-sm text-on-surface uppercase border-b border-on-surface/10 pb-1.5 mb-1">Consistency Calendar</h3>
+            <div class="heatmap-grid" id="stats-heatmap">
+                <!-- Built dynamically in JS -->
+            </div>
+            <div class="flex items-center justify-between text-[8px] font-technical text-text-secondary uppercase mt-2">
+                <span>Dormant</span>
+                <div class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 bg-primary/10 border border-glass-border"></span>
+                    <span class="w-1.5 h-1.5 bg-primary/40"></span>
+                    <span class="w-1.5 h-1.5 bg-primary/70"></span>
+                    <span class="w-1.5 h-1.5 bg-primary"></span>
+                </div>
+                <span>Evolved Pace</span>
+            </div>
+        </section>
+    </section>
+
+    <!-- SCREEN 8: ACHIEVEMENT BADGES -->
+    <section id="screen-achievements" class="screen-container p-6 relative z-10 overflow-y-auto flex-grow gap-6">
+        <header class="flex items-center justify-between mb-2 border-b border-glass-border pb-3 text-left">
+            <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary text-custom">ACHIEVEMENTS</h2>
+            <span class="font-technical text-[10px] text-custom uppercase" id="achieve-unlock-count">0 / 6 Unlocked</span>
         </header>
 
-        <!-- Grid of glowing unlock medals -->
+        <!-- Achievements Medals Grid -->
         <div class="grid grid-cols-2 gap-4" id="achievements-grid">
-            <!-- 6 Rare Medals templates rendered dynamically -->
+            <!-- Medal cards templates rendered in JS -->
         </div>
     </section>
 
-    <!-- FLOATING TRANSLUCENT BOTTOM NAVIGATION BAR (Visible only on active app dashboard stages) -->
-    <nav id="app-bottom-nav" class="glass-card fixed bottom-3 left-3 right-3 z-50 flex justify-around items-center px-2 py-2" style="border-radius: var(--radius-lg); border-color: rgba(var(--accent-glow-rgb), 0.15)">
-        <button id="nav-btn-home" class="flex flex-col items-center justify-center p-2 rounded-lg text-accent-glow animate-pulse" onclick="switchMobileScreen('screen-dashboard')">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 24px;">home</span>
-            <span class="font-technical text-[8px] uppercase tracking-wider mt-0.5">Sync</span>
+    <!-- DYNAMIC FLOATING GLASS NAV DOCK (Exact layout blueprint from profile_stats_floating_glass navigation) -->
+    <nav id="app-bottom-nav" class="fixed bottom-6 left-4 right-4 z-50 flex justify-around items-center px-4 py-2 glass-card md:hidden shadow-[0_8px_32px_rgba(154,0,2,0.1)]" style="border-radius: 24px;">
+        <button id="nav-btn-home" class="flex flex-col items-center justify-center w-12 h-12 text-on-primary bg-primary rounded-xl p-2 scale-110 transition-all duration-300 active:translate-y-1 shadow-[0_4px_12px_rgba(var(--accent-glow-rgb),0.3)]" onclick="switchMobileScreen('screen-dashboard')">
+            <span class="material-symbols-outlined text-2xl">home</span>
         </button>
         
-        <button id="nav-btn-missions" class="flex flex-col items-center justify-center p-2 rounded-lg text-text-secondary opacity-70 hover:opacity-100 transition-opacity" onclick="switchMobileScreen('screen-missions')">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0; font-size: 24px;">fitness_center</span>
-            <span class="font-technical text-[8px] uppercase tracking-wider mt-0.5">Missions</span>
+        <button id="nav-btn-missions" class="flex flex-col items-center justify-center w-12 h-12 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-primary-container/20 transition-all duration-200 active:translate-y-1 rounded-xl" onclick="switchMobileScreen('screen-missions')">
+            <span class="material-symbols-outlined text-2xl">fitness_center</span>
         </button>
 
-        <button id="nav-btn-evolution" class="flex flex-col items-center justify-center p-2 rounded-lg text-text-secondary opacity-70 hover:opacity-100 transition-opacity" onclick="switchMobileScreen('screen-evolution')">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0; font-size: 24px;">rocket_launch</span>
-            <span class="font-technical text-[8px] uppercase tracking-wider mt-0.5">Limit</span>
+        <button id="nav-btn-evolution" class="flex flex-col items-center justify-center w-12 h-12 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-primary-container/20 transition-all duration-200 active:translate-y-1 rounded-xl" onclick="switchMobileScreen('screen-evolution')">
+            <span class="material-symbols-outlined text-2xl">rocket_launch</span>
         </button>
 
-        <button id="nav-btn-stats" class="flex flex-col items-center justify-center p-2 rounded-lg text-text-secondary opacity-70 hover:opacity-100 transition-opacity" onclick="switchMobileScreen('screen-stats')">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0; font-size: 24px;">monitoring</span>
-            <span class="font-technical text-[8px] uppercase tracking-wider mt-0.5">Stats</span>
+        <button id="nav-btn-stats" class="flex flex-col items-center justify-center w-12 h-12 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-primary-container/20 transition-all duration-200 active:translate-y-1 rounded-xl" onclick="switchMobileScreen('screen-stats')">
+            <span class="material-symbols-outlined text-2xl">monitoring</span>
         </button>
 
-        <button id="nav-btn-achievements" class="flex flex-col items-center justify-center p-2 rounded-lg text-text-secondary opacity-70 hover:opacity-100 transition-opacity" onclick="switchMobileScreen('screen-achievements')">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0; font-size: 24px;">workspace_premium</span>
-            <span class="font-technical text-[8px] uppercase tracking-wider mt-0.5">Badges</span>
+        <button id="nav-btn-achievements" class="flex flex-col items-center justify-center w-12 h-12 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-primary-container/20 transition-all duration-200 active:translate-y-1 rounded-xl" onclick="switchMobileScreen('screen-achievements')">
+            <span class="material-symbols-outlined text-2xl">workspace_premium</span>
         </button>
     </nav>
 
-    <!-- Load scripts -->
+    <!-- Dynamic JS -->
     <script src="app.js"></script>
 </body>
 </html>
