@@ -20,6 +20,7 @@ const state = {
     fightingStyle: 'shadow',
     unlockedAchievements: 0,
     missions: [],
+    adaptiveQuestMode: true,
     achievementsList: [
         { id: 'first_directive', title: 'System Boot', desc: 'Sync your neural link for the first time.', icon: 'sync', unlocked: false },
         { id: 'hydration_max', title: 'Elixir Drinker', desc: 'Consume 2.0L of water in a single sync loop.', icon: 'water_drop', unlocked: false },
@@ -349,7 +350,39 @@ function toggleTheme(targetTheme) {
 
 /* --- ONBOARDING & ARCHETYPE SCORING --- */
 let activeOnboardingStep = 1;
-const totalOnboardingSteps = 7;
+const totalOnboardingSteps = 8;
+
+function selectWebQuestMode(mode) {
+    playClickSound();
+    const squireInput = document.querySelector('input[name="quest-mode"][value="squire"]');
+    const monarchInput = document.querySelector('input[name="quest-mode"][value="monarch"]');
+    const squireCard = document.getElementById('quest-mode-squire-card');
+    const monarchCard = document.getElementById('quest-mode-monarch-card');
+    
+    if (mode === 'squire') {
+        squireInput.checked = true;
+        squireCard.style.borderColor = 'var(--primary)';
+        squireCard.style.background = 'rgba(var(--accent-glow-rgb, 195, 244, 0), 0.08)';
+        squireCard.querySelector('span.material-symbols-outlined').style.color = 'var(--primary)';
+        
+        monarchInput.checked = false;
+        monarchCard.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        monarchCard.style.background = 'var(--glass-bg)';
+        monarchCard.querySelector('span.material-symbols-outlined').style.color = 'var(--text-muted)';
+        state.adaptiveQuestMode = true;
+    } else {
+        monarchInput.checked = true;
+        monarchCard.style.borderColor = 'var(--primary)';
+        monarchCard.style.background = 'rgba(var(--accent-glow-rgb, 195, 244, 0), 0.08)';
+        monarchCard.querySelector('span.material-symbols-outlined').style.color = 'var(--primary)';
+        
+        squireInput.checked = false;
+        squireCard.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        squireCard.style.background = 'var(--glass-bg)';
+        squireCard.querySelector('span.material-symbols-outlined').style.color = 'var(--text-muted)';
+        state.adaptiveQuestMode = false;
+    }
+}
 
 function setAnimePreset(preset) {
     document.getElementById('input-fav-anime').value = preset;
@@ -366,6 +399,10 @@ function nextOnboardingStep() {
         document.querySelector(`.onboarding-step-card[data-step="${activeOnboardingStep}"]`).classList.add('hidden');
         activeOnboardingStep++;
         document.querySelector(`.onboarding-step-card[data-step="${activeOnboardingStep}"]`).classList.remove('hidden');
+        
+        if (activeOnboardingStep === 7) {
+            updateWebMuscleCurationText();
+        }
         
         document.getElementById('onboarding-step-num').innerText = `${activeOnboardingStep}/${totalOnboardingSteps}`;
         document.getElementById('onboarding-progress').style.width = `${(activeOnboardingStep / totalOnboardingSteps) * 100}%`;
@@ -394,6 +431,496 @@ function backOnboardingStep() {
     }
 }
 
+/* --- MUSCLE WIKI TARGETER & GEMINI AI CORE --- */
+let selectedWebMuscleSectors = [];
+let geminiApiKey = "";
+
+async function loadApiKey() {
+    try {
+        const response = await fetch('.env');
+        if (response.ok) {
+            const text = await response.text();
+            const match = text.match(/GEMINI_API_KEY\s*=\s*([^\s#]+)/);
+            if (match && match[1]) {
+                geminiApiKey = match[1].trim();
+                logToConsole("[NEURAL] Gemini core sync active. Key decrypted successfully.");
+            }
+        }
+    } catch (e) {
+        // Safe fallback
+    }
+}
+
+function toggleWebMuscleSector(muscle) {
+    playClickSound();
+    const index = selectedWebMuscleSectors.indexOf(muscle);
+    const cardEl = event.currentTarget;
+    const inputEl = cardEl.querySelector('input');
+    const badgeEl = cardEl.querySelector('.select-x-icon');
+    
+    if (index === -1) {
+        selectedWebMuscleSectors.push(muscle);
+        inputEl.checked = true;
+        cardEl.style.borderColor = 'var(--primary)';
+        cardEl.style.background = 'rgba(var(--primary-rgb, 195, 244, 0), 0.08)';
+        if (badgeEl) badgeEl.classList.remove('hidden');
+    } else {
+        selectedWebMuscleSectors.splice(index, 1);
+        inputEl.checked = false;
+        cardEl.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        cardEl.style.background = 'var(--glass-bg)';
+        if (badgeEl) badgeEl.classList.add('hidden');
+    }
+}
+
+function updateWebMuscleCurationText() {
+    const styleEl = document.querySelector('input[name="fighting-style"]:checked');
+    const style = styleEl ? styleEl.value : 'shadow';
+    const subEl = document.getElementById('onboarding-muscle-sub');
+    if (!subEl) return;
+    
+    if (style === 'shadow') {
+        subEl.innerText = "Select muscle sectors to fortify for high-speed evasion and stealth precision (Assassin focus).";
+    } else if (style === 'brawler') {
+        subEl.innerText = "Select heavy muscle zones to break through raw structural power boundaries (Warrior hypertrophy).";
+    } else if (style === 'tactician') {
+        subEl.innerText = "Select core pacing sectors for infinite cardiovascular synchro (Stamina intervals).";
+    }
+}
+
+async function fetchAiMissionsWeb() {
+    if (!geminiApiKey) {
+        generateLocalCuratedMissionsWeb();
+        return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'ai-loading-overlay';
+    overlay.className = 'fixed inset-0 bg-background/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center text-center p-8';
+    overlay.innerHTML = `
+        <div class="space-y-6 flex flex-col items-center">
+            <div class="relative w-24 h-24 flex items-center justify-center glass-card rounded-full border border-primary animate-spin" style="border-radius:50%">
+                <span class="material-symbols-outlined text-4xl text-custom">sync</span>
+            </div>
+            <h2 class="font-display text-2xl tracking-[0.2em] text-custom uppercase">Syncing Neural Directives...</h2>
+            <p class="font-technical text-xs tracking-widest text-text-secondary uppercase">Establishing Link to Gemini Core</p>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    try {
+        const rank = state.rank;
+        let multiplier = 1.0;
+        if (rank === 'D') multiplier = 0.5;
+        if (rank === 'C') multiplier = 1.2;
+        if (rank === 'B') multiplier = 2.0;
+        if (rank === 'A') multiplier = 3.0;
+        if (rank === 'S') multiplier = 4.0;
+
+        const prompt = `
+You are the Abyssal Protocol AI. Generate a premium, gamified, high-tech fitness training routine for a protagonist.
+Here are the user details:
+- Current Rank: ${rank}-Rank
+- Specialty Class: ${state.character}
+- Target Muscle sectors to train: ${selectedWebMuscleSectors.join(', ') || 'General Conditioning'}
+- Favorite anime hero preset: ${state.favCharacter}
+
+Generate exactly 2-3 custom, highly immersive, game-like fitness exercises specifically curating movements for the target muscle sectors.
+Return your output STRICTLY as a raw JSON array of objects. Do not wrap in markdown or any other tags.
+Each object must have exactly these keys:
+- "id": a unique string key (e.g., "ai_chest_press", "ai_back_rows")
+- "title": a dramatic, epic sci-fi or anime workout title (e.g. "Abyssal Gravity Pullups", "Absolute Core Overload")
+- "desc": a technical, immersive 1-sentence description detailing the story-driven purpose of this exercise
+- "target": a number (representing reps or seconds) between 8 and 30 (scaled appropriately for ${rank}-Rank)
+- "unit": a string ("Reps" or "Sec")
+- "xp": an integer XP reward (ranging from 100 to 300)
+`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                contents: [
+                    {
+                        parts: [
+                            { text: prompt }
+                        ]
+                    }
+                ],
+                generationConfig: {
+                    responseMimeType: 'application/json'
+                }
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const textResponse = data.candidates[0].content.parts[0].text;
+            const parsedMissions = JSON.parse(textResponse.trim());
+            
+            // Generate core 3
+            let baseRun = state.adaptiveQuestMode ? (3.0 + 0.5 * (state.level - 1)) : 10.0;
+            let basePush = state.adaptiveQuestMode ? (30 + 5 * (state.level - 1)) : 100;
+            let baseSquat = state.adaptiveQuestMode ? (30 + 5 * (state.level - 1)) : 100;
+
+            let runTarget = Math.round(baseRun * multiplier * 10) / 10;
+            let pushTarget = Math.round(basePush * multiplier);
+            let squatTarget = Math.round(baseSquat * multiplier);
+
+            const coreMissions = [
+                { 
+                    id: 'run_directive', 
+                    title: 'Navigational Run', 
+                    desc: `Navigate sector limits. Target: ${runTarget} KM.`, 
+                    target: runTarget,
+                    unit: 'KM',
+                    progress: 0,
+                    xp: Math.round(200 * multiplier), 
+                    difficulty: `${rank}-Rank`,
+                    icon: 'directions_run',
+                    completed: false 
+                },
+                { 
+                    id: 'pushup_directive', 
+                    title: 'Gravity Pushups', 
+                    desc: `Complete ${pushTarget} pushup cycles inside resistance field.`, 
+                    target: pushTarget,
+                    unit: 'Pushups',
+                    progress: 0,
+                    xp: Math.round(150 * multiplier), 
+                    difficulty: `${rank}-Rank`,
+                    icon: 'fitness_center',
+                    completed: false 
+                },
+                { 
+                    id: 'squat_directive', 
+                    title: 'Shadow Squats', 
+                    desc: `Log ${squatTarget} compound squats to elevate protagonist mass.`, 
+                    target: squatTarget,
+                    unit: 'Squats',
+                    progress: 0,
+                    xp: Math.round(150 * multiplier), 
+                    difficulty: `${rank}-Rank`,
+                    icon: 'sports_mma',
+                    completed: false 
+                }
+            ];
+
+            const customMissions = parsedMissions.map(m => {
+                let icon = 'fitness_center';
+                const mid = m.id.toLowerCase();
+                const munit = m.unit.toLowerCase();
+                if (mid.includes('run') || munit === 'km') icon = 'directions_run';
+                if (mid.includes('core') || mid.includes('abs') || mid.includes('crunches')) icon = 'grid_3x3';
+                if (mid.includes('pull') || mid.includes('back') || mid.includes('row')) icon = 'align_vertical_bottom';
+                if (mid.includes('shoulder') || mid.includes('press') || mid.includes('raise')) icon = 'upgrade';
+                
+                return {
+                    id: m.id,
+                    title: m.title,
+                    desc: m.desc,
+                    target: parseFloat(m.target) || 10,
+                    unit: m.unit,
+                    progress: 0,
+                    xp: parseInt(m.xp) || 150,
+                    difficulty: `${rank}-Rank`,
+                    icon: icon,
+                    completed: false
+                };
+            });
+
+            state.missions = [...coreMissions, ...customMissions];
+            
+            state.missions.push({
+                id: 'water_directive',
+                title: 'Tactical Recovery',
+                desc: 'Consume 2.0 Liters of water to balance electrolyte core values.',
+                target: 2.0,
+                unit: 'L',
+                progress: 0,
+                xp: 100,
+                difficulty: 'E-Rank',
+                icon: 'local_drink',
+                completed: false
+            });
+            
+            renderMissions();
+            playNotificationSound();
+        } else {
+            generateLocalCuratedMissionsWeb();
+        }
+    } catch (e) {
+        generateLocalCuratedMissionsWeb();
+    } finally {
+        const overlayEl = document.getElementById('ai-loading-overlay');
+        if (overlayEl) overlayEl.remove();
+    }
+}
+
+function generateLocalCuratedMissionsWeb() {
+    const rank = state.rank;
+    let multiplier = 1.0;
+    if (rank === 'D') multiplier = 0.5;
+    if (rank === 'C') multiplier = 1.2;
+    if (rank === 'B') multiplier = 2.0;
+    if (rank === 'A') multiplier = 3.0;
+    if (rank === 'S') multiplier = 4.0;
+
+    state.missions = [];
+
+    // 1. Mandatory Solo Leveling Core Tasks
+    let baseRun = state.adaptiveQuestMode ? (3.0 + 0.5 * (state.level - 1)) : 10.0;
+    let basePush = state.adaptiveQuestMode ? (30 + 5 * (state.level - 1)) : 100;
+    let baseSquat = state.adaptiveQuestMode ? (30 + 5 * (state.level - 1)) : 100;
+
+    let runTarget = Math.round(baseRun * multiplier * 10) / 10;
+    let pushTarget = Math.round(basePush * multiplier);
+    let squatTarget = Math.round(baseSquat * multiplier);
+
+    state.missions.push({ 
+        id: 'run_directive', 
+        title: 'Navigational Run', 
+        desc: `Navigate sector limits. Target: ${runTarget} KM.`, 
+        target: runTarget,
+        unit: 'KM',
+        progress: 0,
+        xp: Math.round(200 * multiplier), 
+        difficulty: `${rank}-Rank`,
+        icon: 'directions_run',
+        completed: false 
+    });
+
+    state.missions.push({ 
+        id: 'pushup_directive', 
+        title: 'Gravity Pushups', 
+        desc: `Complete ${pushTarget} pushup cycles inside resistance field.`, 
+        target: pushTarget,
+        unit: 'Pushups',
+        progress: 0,
+        xp: Math.round(150 * multiplier), 
+        difficulty: `${rank}-Rank`,
+        icon: 'fitness_center',
+        completed: false 
+    });
+
+    state.missions.push({ 
+        id: 'squat_directive', 
+        title: 'Shadow Squats', 
+        desc: `Log ${squatTarget} compound squats to elevate protagonist mass.`, 
+        target: squatTarget,
+        unit: 'Squats',
+        progress: 0,
+        xp: Math.round(150 * multiplier), 
+        difficulty: `${rank}-Rank`,
+        icon: 'sports_mma',
+        completed: false 
+    });
+
+    // 2. Custom Muscle Sector Exercises
+    let sectorsToTrain = selectedWebMuscleSectors.length > 0 ? selectedWebMuscleSectors : ['Back', 'Core'];
+    sectorsToTrain.forEach(sector => {
+        if (sector === 'Chest') {
+            state.missions.push({
+                id: 'chest_directive',
+                title: 'Quantum Chest Press',
+                desc: 'Utilize chest force fields to push beyond normal physical constraints.',
+                target: Math.round(15 * multiplier),
+                unit: 'Reps',
+                progress: 0,
+                xp: Math.round(120 * multiplier),
+                difficulty: `${rank}-Rank`,
+                icon: 'accessibility_new',
+                completed: false
+            });
+        } else if (sector === 'Back') {
+            let title = 'Assisted Pullups';
+            let target = 5;
+            if (rank === 'C') { title = 'Abyssal Pullups'; target = 8; }
+            else if (rank === 'B') { title = 'Weighted Sync Pullups'; target = 12; }
+            else if (rank === 'A' || rank === 'S') { title = 'One-Arm L-Sit Pullups'; target = 15; }
+            
+            state.missions.push({
+                id: 'back_directive',
+                title: title,
+                desc: 'Back lat-wings expansion protocol. Log compound pulling reps to maximize pull power.',
+                target: Math.round(target * multiplier),
+                unit: 'Reps',
+                progress: 0,
+                xp: Math.round(120 * multiplier),
+                difficulty: `${rank}-Rank`,
+                icon: 'align_vertical_bottom',
+                completed: false
+            });
+        } else if (sector === 'Shoulders') {
+            let title = 'Light Shoulder Presses';
+            let target = 10;
+            if (rank === 'C') { title = 'Overhead Power Presses'; target = 15; }
+            else if (rank === 'B') { title = 'Handstand Wall Handsprings'; target = 8; }
+            else if (rank === 'A' || rank === 'S') { title = 'Hypergravity Handstand Pushups'; target = 12; }
+            
+            state.missions.push({
+                id: 'shoulders_directive',
+                title: title,
+                desc: 'Anterior deltoid stabilization: log presses inside high-gravity field.',
+                target: Math.round(target * multiplier),
+                unit: 'Reps',
+                progress: 0,
+                xp: Math.round(110 * multiplier),
+                difficulty: `${rank}-Rank`,
+                icon: 'upgrade',
+                completed: false
+            });
+        } else if (sector === 'Legs') {
+            state.missions.push({
+                id: 'legs_directive',
+                title: 'Shadow Step Lunges',
+                desc: 'Fortify single-leg stabilizers for teleportation-like speed output.',
+                target: Math.round(16 * multiplier),
+                unit: 'Reps',
+                progress: 0,
+                xp: Math.round(110 * multiplier),
+                difficulty: `${rank}-Rank`,
+                icon: 'nordic_walking',
+                completed: false
+            });
+        } else if (sector === 'Arms') {
+            let title = 'Standard Bench Dips';
+            let target = 12;
+            if (rank === 'C') { title = 'Synaptic Bar Dips'; target = 18; }
+            else if (rank === 'B') { title = 'Weighted Tricep Extenders'; target = 15; }
+            else if (rank === 'A' || rank === 'S') { title = 'Muscle-Up Arm Triggers'; target = 8; }
+            
+            state.missions.push({
+                id: 'arms_directive',
+                title: title,
+                desc: 'Tricep and bicep synaptic fibers activation loops.',
+                target: Math.round(target * multiplier),
+                unit: 'Reps',
+                progress: 0,
+                xp: Math.round(100 * multiplier),
+                difficulty: `${rank}-Rank`,
+                icon: 'sports_gymnastics',
+                completed: false
+            });
+        } else if (sector === 'Core') {
+            let title = 'Floor Ab Crunches';
+            let target = 15;
+            if (rank === 'C') { title = 'Core Overload Crunches'; target = 25; }
+            else if (rank === 'B') { title = 'Hanging Leg Raises'; target = 15; }
+            else if (rank === 'A' || rank === 'S') { title = 'L-Sit Hold Intervals'; target = 30; }
+            
+            state.missions.push({
+                id: 'core_directive',
+                title: title,
+                desc: 'Abdominal spinal core shield fortification cycle.',
+                target: Math.round(target * multiplier),
+                unit: target === 30 && (rank === 'A' || rank === 'S') ? 'Sec' : 'Reps',
+                progress: 0,
+                xp: Math.round(100 * multiplier),
+                difficulty: `${rank}-Rank`,
+                icon: 'grid_3x3',
+                completed: false
+            });
+        }
+    });
+
+    // 3. Hydration
+    state.missions.push({ 
+        id: 'water_directive', 
+        title: 'Tactical Hydration', 
+        desc: 'Consume 2.0 Liters of water to balance electrolyte core values.', 
+        target: 2.0,
+        unit: 'L',
+        progress: 0,
+        xp: 100, 
+        difficulty: 'E-Rank',
+        icon: 'local_drink',
+        completed: false 
+    });
+
+    renderMissions();
+}
+
+function getWebStickFigureAnimation(id) {
+    const key = id.toLowerCase();
+    if (key.includes('pushup') || key.includes('chest')) {
+        return `
+        <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+            <line x1="20" y1="85" x2="180" y2="85" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
+            <g class="pushup-body-group">
+                <line x1="40" y1="80" x2="80" y2="72" />
+                <line x1="80" y1="72" x2="130" y2="60" />
+                <circle cx="142" cy="56" r="8" fill="var(--bg-primary)" />
+                <polyline points="120,62 105,73 120,85" class="pushup-arm" stroke="var(--accent-blue)" />
+            </g>
+        </svg>`;
+    } else if (key.includes('squat') || key.includes('leg') || key.includes('lunge')) {
+        return `
+        <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+            <line x1="20" y1="85" x2="180" y2="85" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
+            <g class="squat-body-group">
+                <line x1="100" y1="52" x2="100" y2="30" />
+                <circle cx="100" cy="20" r="8" fill="var(--bg-primary)" />
+                <line x1="100" y1="34" x2="120" y2="34" stroke="var(--accent-blue)" />
+            </g>
+            <polyline points="100,52 108,68 100,85" class="squat-leg-r" />
+            <polyline points="100,52 92,68 100,85" class="squat-leg-l" />
+        </svg>`;
+    } else if (key.includes('run') || key.includes('walk') || key.includes('cardio')) {
+        return `
+        <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+            <line x1="20" y1="85" x2="180" y2="85" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
+            <g class="run-body-group">
+                <line x1="100" y1="50" x2="104" y2="32" />
+                <circle cx="106" cy="22" r="8" fill="var(--bg-primary)" />
+                <polyline points="104,34 96,44 106,50" class="run-arm-l" stroke="var(--accent-blue)" />
+                <polyline points="104,34 112,44 122,42" class="run-arm-r" stroke="var(--accent-blue)" />
+            </g>
+            <polyline points="100,50 90,62 80,82" class="run-leg-l" />
+            <polyline points="100,50 110,62 120,82" class="run-leg-r" />
+        </svg>`;
+    } else if (key.includes('pull') || key.includes('back') || key.includes('row')) {
+        return `
+        <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+            <line x1="60" y1="20" x2="140" y2="20" stroke="rgba(255,255,255,0.4)" stroke-width="3" />
+            <g class="pullup-body-group">
+                <line x1="100" y1="48" x2="100" y2="72" />
+                <circle cx="100" cy="38" r="8" fill="var(--bg-primary)" />
+                <polyline points="90,20 85,34 100,48" class="pullup-arm-l" stroke="var(--accent-blue)" />
+                <polyline points="110,20 115,34 100,48" class="pullup-arm-r" stroke="var(--accent-blue)" />
+                <line x1="100" y1="72" x2="96" y2="88" />
+                <line x1="100" y1="72" x2="104" y2="88" />
+            </g>
+        </svg>`;
+    } else if (key.includes('water') || key.includes('drink') || key.includes('hydration')) {
+        return `
+        <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+            <g class="water-body">
+                <line x1="90" y1="80" x2="90" y2="52" />
+                <circle cx="90" cy="42" r="8" fill="var(--bg-primary)" />
+                <polyline points="90,56 80,68 90,80" />
+                <polyline points="90,56 102,46 95,42" class="water-arm-r" stroke="var(--accent-blue)" />
+            </g>
+            <circle cx="95" cy="35" r="2" class="water-droplet" fill="var(--accent-blue)" stroke="none" />
+            <rect x="135" y="45" width="16" height="24" rx="2" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+            <rect x="137" y="47" width="12" height="20" rx="1" class="water-fill" fill="var(--accent-blue)" stroke="none" />
+        </svg>`;
+    } else {
+        return `
+        <svg viewBox="0 0 200 100" class="w-full h-full text-custom" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+            <line x1="20" y1="85" x2="180" y2="85" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
+            <g class="pushup-body-group">
+                <line x1="40" y1="80" x2="80" y2="72" />
+                <line x1="80" y1="72" x2="130" y2="60" />
+                <circle cx="142" cy="56" r="8" fill="var(--bg-primary)" />
+                <polyline points="120,62 105,73 120,85" class="pushup-arm" stroke="var(--accent-blue)" />
+            </g>
+        </svg>`;
+    }
+}
+
 function calculateArchetypeAssignment() {
     const fitLevel = document.querySelector('input[name="fit-level"]:checked').value;
     const bodyGoal = document.querySelector('input[name="body-goal"]:checked').value;
@@ -402,6 +929,7 @@ function calculateArchetypeAssignment() {
     const character = document.getElementById('input-fav-character').value.trim() || 'Sung Jin-Woo';
     const style = document.querySelector('input[name="fighting-style"]:checked').value;
     const motivation = document.querySelector('input[name="motivation"]:checked').value;
+    const questMode = document.querySelector('input[name="quest-mode"]:checked')?.value || 'squire';
     
     state.fitLevel = fitLevel;
     state.bodyGoal = bodyGoal;
@@ -410,6 +938,7 @@ function calculateArchetypeAssignment() {
     state.favCharacter = character;
     state.fightingStyle = style;
     state.motivationType = motivation;
+    state.adaptiveQuestMode = (questMode === 'squire');
     
     let assignedClass = 'Aura Striker';
     let assignedRank = 'E';
@@ -508,66 +1037,11 @@ function hexToRgb(hex) {
 
 /* --- DIRECTIVES BUILD PROTOCOLS --- */
 function generateDailyMissions() {
-    const rank = state.rank;
-    let multiplier = 1.0;
-    
-    if (rank === 'E') multiplier = 0.5;
-    if (rank === 'D') multiplier = 0.8;
-    if (rank === 'C') multiplier = 1.2;
-    if (rank === 'B') multiplier = 1.5;
-    if (rank === 'A') multiplier = 2.0;
-    if (rank === 'S') multiplier = 3.2;
-    
-    state.missions = [
-        { 
-            id: 'run_directive', 
-            title: `Navigational Run`, 
-            desc: `Navigate sector limits. Distance: ${Math.round(2 * multiplier * 10) / 10} KM.`, 
-            target: Math.round(2 * multiplier * 10) / 10,
-            unit: 'KM',
-            progress: 0,
-            xp: Math.round(200 * multiplier), 
-            difficulty: `${rank}-Rank`,
-            icon: 'directions_run',
-            completed: false 
-        },
-        { 
-            id: 'pushup_directive', 
-            title: `Gravity Pushups`, 
-            desc: `Complete ${Math.round(20 * multiplier)} pushup cycles inside resistance aura.`, 
-            target: Math.round(20 * multiplier),
-            unit: 'Pushups',
-            progress: 0,
-            xp: Math.round(150 * multiplier), 
-            difficulty: `${rank}-Rank`,
-            icon: 'fitness_center',
-            completed: false 
-        },
-        { 
-            id: 'squat_directive', 
-            title: `Shadow Squats`, 
-            desc: `Log ${Math.round(40 * multiplier)} compound squats to elevate protagonist mass.`, 
-            target: Math.round(40 * multiplier),
-            unit: 'Squats',
-            progress: 0,
-            xp: Math.round(150 * multiplier), 
-            difficulty: `${rank}-Rank`,
-            icon: 'sports_mma',
-            completed: false 
-        },
-        { 
-            id: 'water_directive', 
-            title: `Tactical Recovery`, 
-            desc: `Consume 2.0 Liters of water to balance electrolyte core values.`, 
-            target: 2.0,
-            unit: 'L',
-            progress: 0,
-            xp: 100, 
-            difficulty: `E-Rank`,
-            icon: 'health_and_safety',
-            completed: false 
-        }
-    ];
+    if (geminiApiKey) {
+        fetchAiMissionsWeb();
+    } else {
+        generateLocalCuratedMissionsWeb();
+    }
 }
 
 
@@ -653,6 +1127,32 @@ function addXP(amount) {
         state.stats.agi += 3;
         state.stats.stm += 3;
         state.stats.int += 1;
+        
+        // Auto-scale Squire mode starting baseline targets by +5 Reps / +0.5 KM per level
+        if (state.adaptiveQuestMode) {
+            let multiplier = 1.0;
+            if (state.rank === 'D') multiplier = 0.5;
+            if (state.rank === 'C') multiplier = 1.2;
+            if (state.rank === 'B') multiplier = 2.0;
+            if (state.rank === 'A') multiplier = 3.0;
+            if (state.rank === 'S') multiplier = 4.0;
+            
+            state.missions.forEach(m => {
+                if (m.id === 'run_directive') {
+                    m.target = Math.round((m.target + 0.5 * multiplier) * 10) / 10;
+                    m.completed = (m.progress >= m.target);
+                }
+                if (m.id === 'pushup_directive') {
+                    m.target = Math.round(m.target + 5 * multiplier);
+                    m.completed = (m.progress >= m.target);
+                }
+                if (m.id === 'squat_directive') {
+                    m.target = Math.round(m.target + 5 * multiplier);
+                    m.completed = (m.progress >= m.target);
+                }
+            });
+            logToConsole(`[SYSTEM PROTOCOL] Squire Sync expanded Daily Quest targets: +${0.5 * multiplier} KM / +${Math.round(5 * multiplier)} Reps.`);
+        }
         
         if (state.level >= 10) {
             unlockAchievement('s_rank_clear');
@@ -842,7 +1342,7 @@ function renderMissions() {
     
     state.missions.forEach(m => {
         const card = document.createElement('div');
-        card.className = `col-span-1 md:col-span-12 glass-card p-6 flex flex-col gap-6 relative overflow-hidden group ${m.completed ? 'opacity-70 border-primary/20' : ''}`;
+        card.className = `col-span-1 md:col-span-12 glass-card p-6 flex flex-col gap-6 relative overflow-hidden group cursor-pointer ${m.completed ? 'opacity-70 border-primary/20' : ''}`;
         
         const completionRate = Math.min(100, Math.round((m.progress / m.target) * 100));
         
@@ -859,12 +1359,14 @@ function renderMissions() {
                 
                 ${m.completed ? `
                     <div class="flex items-center gap-2 text-custom font-label-sm text-[10px] uppercase tracking-widest">
-                        <span class="material-symbols-outlined text-base">check_box</span>
+                        <div class="w-5 h-5 border border-primary flex items-center justify-center bg-primary/10 rounded-sm">
+                            <span class="material-symbols-outlined text-[10px] text-custom font-bold">close</span>
+                        </div>
                         Protocol Complete
                     </div>
                 ` : `
-                    <div class="bg-primary text-on-primary px-2.5 py-1 font-label-sm text-[9px] uppercase tracking-widest flex items-center gap-1 rounded">
-                        <span class="w-1.5 h-1.5 bg-white rounded-none animate-pulse"></span>
+                    <div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-[10px] uppercase tracking-widest">
+                        <div class="w-5 h-5 border border-on-surface/20 flex items-center justify-center rounded-sm"></div>
                         In Progress
                     </div>
                 `}
@@ -887,7 +1389,24 @@ function renderMissions() {
                     </button>
                 </div>
             `}
+
+            <div class="anim-tray hidden pt-4 border-t border-on-surface/10 flex flex-col items-center justify-center gap-2">
+                <div class="w-full max-w-[200px] h-[100px] flex items-center justify-center bg-black/20 border border-primary/20 rounded-lg overflow-hidden relative">
+                    ${getWebStickFigureAnimation(m.id)}
+                </div>
+                <span class="font-technical text-[9px] text-text-secondary uppercase tracking-widest">Procedural Movement Simulation</span>
+            </div>
         `;
+        
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('button') || e.target.closest('a')) return;
+            const tray = card.querySelector('.anim-tray');
+            if (tray) {
+                tray.classList.toggle('hidden');
+                card.classList.toggle('border-primary/50');
+            }
+        });
+
         container.appendChild(card);
     });
 }
@@ -1007,6 +1526,7 @@ function syncTelemetryToParent() {
 /* --- BINDINGS --- */
 document.addEventListener('DOMContentLoaded', () => {
     initCanvas();
+    loadApiKey();
     
     const bootBtn = document.getElementById('btn-boot-system');
     if (bootBtn) {

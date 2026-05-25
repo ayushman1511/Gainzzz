@@ -567,3 +567,140 @@
     filter: grayscale(0);
     opacity: 1;
 }
+
+/* --- PROCEDURAL NEON STICK FIGURE ANIMATIONS --- */
+.pushup-body-group {
+    transform-origin: 40px 80px;
+    animation: pushup-body-anim 1.6s infinite ease-in-out;
+}
+.pushup-arm {
+    transform-origin: 120px 62px;
+    animation: pushup-arm-anim 1.6s infinite ease-in-out;
+}
+@keyframes pushup-body-anim {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(14deg); }
+}
+@keyframes pushup-arm-anim {
+    0%, 100% { transform: rotate(0deg) scaleX(1); }
+    50% { transform: rotate(-35deg) translate(-2px, -4px) scaleX(0.75); }
+}
+
+.squat-body-group {
+    animation: squat-body-anim 1.6s infinite ease-in-out;
+}
+.squat-leg-r {
+    transform-origin: 100px 85px;
+    animation: squat-leg-r-anim 1.6s infinite ease-in-out;
+}
+.squat-leg-l {
+    transform-origin: 100px 85px;
+    animation: squat-leg-l-anim 1.6s infinite ease-in-out;
+}
+@keyframes squat-body-anim {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(18px); }
+}
+@keyframes squat-leg-r-anim {
+    0%, 100% { points: "100,52 108,68 100,85"; }
+    50% { points: "100,70 120,70 100,85"; }
+}
+@keyframes squat-leg-l-anim {
+    0%, 100% { points: "100,52 92,68 100,85"; }
+    50% { points: "100,70 80,70 100,85"; }
+}
+
+.run-body-group {
+    animation: run-body-anim 0.8s infinite linear;
+}
+.run-leg-l {
+    animation: run-leg-l-anim 0.8s infinite linear;
+}
+.run-leg-r {
+    animation: run-leg-r-anim 0.8s infinite linear;
+}
+.run-arm-l {
+    animation: run-arm-l-anim 0.8s infinite linear;
+}
+.run-arm-r {
+    animation: run-arm-r-anim 0.8s infinite linear;
+}
+@keyframes run-body-anim {
+    0%, 100% { transform: translateY(0px) rotate(4deg); }
+    50% { transform: translateY(-3px) rotate(6deg); }
+}
+@keyframes run-leg-l-anim {
+    0%, 100% { points: "100,50 90,62 80,82"; }
+    25% { points: "100,50 82,58 92,72"; }
+    50% { points: "100,50 110,62 120,82"; }
+    75% { points: "100,50 105,68 85,82"; }
+}
+@keyframes run-leg-r-anim {
+    0%, 100% { points: "100,50 110,62 120,82"; }
+    25% { points: "100,50 105,68 85,82"; }
+    50% { points: "100,50 90,62 80,82"; }
+    75% { points: "100,50 82,58 92,72"; }
+}
+@keyframes run-arm-l-anim {
+    0%, 100% { points: "104,34 96,44 106,50"; }
+    50% { points: "104,34 112,44 122,42"; }
+}
+@keyframes run-arm-r-anim {
+    0%, 100% { points: "104,34 112,44 122,42"; }
+    50% { points: "104,34 96,44 106,50"; }
+}
+
+.pullup-body-group {
+    animation: pullup-body-anim 1.8s infinite ease-in-out;
+}
+.pullup-arm-l {
+    animation: pullup-arm-l-anim 1.8s infinite ease-in-out;
+}
+.pullup-arm-r {
+    animation: pullup-arm-r-anim 1.8s infinite ease-in-out;
+}
+@keyframes pullup-body-anim {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-24px); }
+}
+@keyframes pullup-arm-l-anim {
+    0%, 100% { points: "90,20 95,38 100,48"; }
+    50% { points: "90,20 82,24 100,48"; }
+}
+@keyframes pullup-arm-r-anim {
+    0%, 100% { points: "110,20 105,38 100,48"; }
+    50% { points: "110,20 118,24 100,48"; }
+}
+
+.water-arm-r {
+    transform-origin: 90px 56px;
+    animation: water-arm-anim 2s infinite ease-in-out;
+}
+.water-head {
+    transform-origin: 90px 48px;
+    animation: water-head-anim 2s infinite ease-in-out;
+}
+.water-droplet {
+    animation: water-drop-anim 2s infinite ease-in-out;
+}
+.water-fill {
+    transform-origin: bottom;
+    animation: water-fill-anim 2s infinite ease-in-out;
+}
+@keyframes water-arm-anim {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-55deg) translate(-2px, -8px); }
+}
+@keyframes water-head-anim {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(15deg); }
+}
+@keyframes water-drop-anim {
+    0%, 40%, 100% { opacity: 0; transform: translateY(-10px); }
+    50%, 75% { opacity: 1; transform: translateY(4px); }
+}
+@keyframes water-fill-anim {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(0.15); }
+}
+

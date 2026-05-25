@@ -141,7 +141,7 @@
             <div class="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden border border-glass-border">
                 <div id="onboarding-progress" class="h-full bg-primary" style="width: 14%;"></div>
             </div>
-            <span id="onboarding-step-num" class="font-technical text-xs text-custom">1/7</span>
+            <span id="onboarding-step-num" class="font-technical text-xs text-custom">1/8</span>
         </div>
 
         <div class="flex-1 flex items-center justify-center" id="onboarding-cards-container">
@@ -154,7 +154,7 @@
                         <input type="radio" name="fit-level" value="beginner" checked class="hidden"/>
                         <span class="material-symbols-outlined text-accent-blue">circle</span>
                         <div class="text-left">
-                            <h3 class="font-technical text-sm font-bold uppercase text-text-primary">Rank E (Beginner)</h3>
+                            <h3 class="font-technical text-sm font-bold uppercase text-text-primary">Rank D (Beginner)</h3>
                             <p class="text-[10px] text-text-secondary">Just starting the training arc. Hard to do 10 pushups.</p>
                         </div>
                     </label>
@@ -167,12 +167,41 @@
                         </div>
                     </label>
                     <label class="glass-card interactive flex items-center gap-4 p-4 cursor-pointer" style="border-radius: var(--radius-md)">
+                        <input type="radio" name="fit-level" value="expert" class="hidden"/>
+                        <span class="material-symbols-outlined text-text-muted">circle</span>
+                        <div class="text-left">
+                            <h3 class="font-technical text-sm font-bold uppercase text-text-primary">Rank B (Expert)</h3>
+                            <p class="text-[10px] text-text-secondary">Works out regularly. Can do pushups and other exercises easily up to 30 reps.</p>
+                        </div>
+                    </label>
+                    <label class="glass-card interactive flex items-center gap-4 p-4 cursor-pointer" style="border-radius: var(--radius-md)">
                         <input type="radio" name="fit-level" value="advanced" class="hidden"/>
                         <span class="material-symbols-outlined text-text-muted">circle</span>
                         <div class="text-left">
                             <h3 class="font-technical text-sm font-bold uppercase text-text-primary">Rank A (Elite)</h3>
                             <p class="text-[10px] text-text-secondary">Active gym goer/athlete. Ready for heavy missions.</p>
                         </div>
+                    </label>
+                </div>
+
+                <h3 class="font-display text-lg uppercase tracking-wider text-text-primary text-custom mt-4">System Quest Intensity</h3>
+                <p class="text-[10px] text-text-secondary mb-2">Choose your Daily System Quest starting intensity model.</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="glass-card interactive flex flex-col p-3 gap-1 cursor-pointer text-left border rounded-xl select-quest-mode" id="quest-mode-squire-card" onclick="selectWebQuestMode('squire')" style="border-color: var(--primary); background: rgba(var(--accent-glow-rgb), 0.08);">
+                        <input type="radio" name="quest-mode" value="squire" checked class="hidden"/>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-custom">trending_up</span>
+                            <span class="font-technical text-xs font-bold uppercase text-text-primary">Squire Sync</span>
+                        </div>
+                        <p class="text-[8px] leading-tight text-text-secondary">Start easy (30 Reps / 3KM). Auto-increases (+5 Reps / +0.5KM) every Level Up.</p>
+                    </label>
+                    <label class="glass-card interactive flex flex-col p-3 gap-1 cursor-pointer text-left border rounded-xl select-quest-mode" id="quest-mode-monarch-card" onclick="selectWebQuestMode('monarch')" style="border-color: rgba(255, 255, 255, 0.1);">
+                        <input type="radio" name="quest-mode" value="monarch" class="hidden"/>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-text-muted">workspace_premium</span>
+                            <span class="font-technical text-xs font-bold uppercase text-text-primary">Monarch Tier</span>
+                        </div>
+                        <p class="text-[8px] leading-tight text-text-secondary">Start with the full legendary core (100 Reps / 10KM) scaled by starting Rank.</p>
                     </label>
                 </div>
             </div>
@@ -295,8 +324,52 @@
                 </div>
             </div>
 
-            <!-- Step 7: Motivation -->
+            <!-- Step 7: Muscle Sectors (Optional, MuscleWiki style) -->
             <div class="onboarding-step-card space-y-4 w-full hidden" data-step="7">
+                <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary text-custom" id="onboarding-muscle-header">Target Muscle Sectors</h2>
+                <p class="text-xs text-text-secondary mb-4" id="onboarding-muscle-sub">Select physical zones to initialize synchronization directives.</p>
+                <div class="grid grid-cols-2 gap-3" id="muscle-wiki-grid">
+                    <label class="glass-card interactive flex flex-col items-center justify-center p-3 gap-2 cursor-pointer text-center relative border border-on-surface/10 rounded-xl" onclick="toggleWebMuscleSector('Chest')">
+                        <input type="checkbox" name="muscle-sector" value="Chest" class="hidden"/>
+                        <span class="material-symbols-outlined text-xl">accessibility_new</span>
+                        <span class="font-technical text-xs font-bold uppercase">Chest</span>
+                        <div class="absolute top-2 right-2 hidden text-custom select-x-icon"><span class="material-symbols-outlined text-sm">close</span></div>
+                    </label>
+                    <label class="glass-card interactive flex flex-col items-center justify-center p-3 gap-2 cursor-pointer text-center relative border border-on-surface/10 rounded-xl" onclick="toggleWebMuscleSector('Back')">
+                        <input type="checkbox" name="muscle-sector" value="Back" class="hidden"/>
+                        <span class="material-symbols-outlined text-xl">align_vertical_bottom</span>
+                        <span class="font-technical text-xs font-bold uppercase">Back</span>
+                        <div class="absolute top-2 right-2 hidden text-custom select-x-icon"><span class="material-symbols-outlined text-sm">close</span></div>
+                    </label>
+                    <label class="glass-card interactive flex flex-col items-center justify-center p-3 gap-2 cursor-pointer text-center relative border border-on-surface/10 rounded-xl" onclick="toggleWebMuscleSector('Shoulders')">
+                        <input type="checkbox" name="muscle-sector" value="Shoulders" class="hidden"/>
+                        <span class="material-symbols-outlined text-xl">upgrade</span>
+                        <span class="font-technical text-xs font-bold uppercase">Shoulders</span>
+                        <div class="absolute top-2 right-2 hidden text-custom select-x-icon"><span class="material-symbols-outlined text-sm">close</span></div>
+                    </label>
+                    <label class="glass-card interactive flex flex-col items-center justify-center p-3 gap-2 cursor-pointer text-center relative border border-on-surface/10 rounded-xl" onclick="toggleWebMuscleSector('Legs')">
+                        <input type="checkbox" name="muscle-sector" value="Legs" class="hidden"/>
+                        <span class="material-symbols-outlined text-xl">nordic_walking</span>
+                        <span class="font-technical text-xs font-bold uppercase">Legs</span>
+                        <div class="absolute top-2 right-2 hidden text-custom select-x-icon"><span class="material-symbols-outlined text-sm">close</span></div>
+                    </label>
+                    <label class="glass-card interactive flex flex-col items-center justify-center p-3 gap-2 cursor-pointer text-center relative border border-on-surface/10 rounded-xl" onclick="toggleWebMuscleSector('Arms')">
+                        <input type="checkbox" name="muscle-sector" value="Arms" class="hidden"/>
+                        <span class="material-symbols-outlined text-xl">sports_gymnastics</span>
+                        <span class="font-technical text-xs font-bold uppercase">Arms</span>
+                        <div class="absolute top-2 right-2 hidden text-custom select-x-icon"><span class="material-symbols-outlined text-sm">close</span></div>
+                    </label>
+                    <label class="glass-card interactive flex flex-col items-center justify-center p-3 gap-2 cursor-pointer text-center relative border border-on-surface/10 rounded-xl" onclick="toggleWebMuscleSector('Core')">
+                        <input type="checkbox" name="muscle-sector" value="Core" class="hidden"/>
+                        <span class="material-symbols-outlined text-xl">grid_3x3</span>
+                        <span class="font-technical text-xs font-bold uppercase">Core</span>
+                        <div class="absolute top-2 right-2 hidden text-custom select-x-icon"><span class="material-symbols-outlined text-sm">close</span></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Step 8: Motivation -->
+            <div class="onboarding-step-card space-y-4 w-full hidden" data-step="8">
                 <h2 class="font-display text-2xl uppercase tracking-wider text-text-primary text-custom">Motivational Fuel</h2>
                 <p class="text-xs text-text-secondary mb-4">What words trigger your limit break?</p>
                 <div class="space-y-3">
